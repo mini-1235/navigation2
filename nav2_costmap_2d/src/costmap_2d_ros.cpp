@@ -58,8 +58,8 @@ using rcl_interfaces::msg::ParameterType;
 
 namespace nav2_costmap_2d
 {
-Costmap2DROS::Costmap2DROS(const rclcpp::NodeOptions & options)
-: nav2::LifecycleNode("costmap", "", options),
+Costmap2DROS::Costmap2DROS(rclcpp::NodeOptions options)
+: nav2::LifecycleNode("costmap", "", options.use_intra_process_comms(true)),
   name_("costmap"),
   default_plugins_{"static_layer", "obstacle_layer", "inflation_layer"},
   default_types_{
@@ -83,7 +83,7 @@ rclcpp::NodeOptions getChildNodeOptions(
   nav2::replaceOrAddArgument(new_arguments, "-r", "__node", name + ":" + "__node:=" + name);
   nav2::replaceOrAddArgument(new_arguments, "-p", "use_sim_time",
       "use_sim_time:=" + std::string(use_sim_time ? "true" : "false"));
-  return rclcpp::NodeOptions().arguments(new_arguments);
+  return rclcpp::NodeOptions().use_intra_process_comms(true).arguments(new_arguments);
 }
 
 Costmap2DROS::Costmap2DROS(
