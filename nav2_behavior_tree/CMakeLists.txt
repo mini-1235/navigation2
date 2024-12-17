@@ -11,7 +11,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -34,7 +34,7 @@ set(dependencies
   sensor_msgs
   nav2_msgs
   nav_msgs
-  behaviortree_cpp_v3
+  behaviortree_cpp
   tf2
   tf2_ros
   tf2_geometry_msgs
@@ -135,6 +135,18 @@ list(APPEND plugin_libs nav2_is_battery_charging_condition_bt_node)
 add_library(nav2_is_battery_low_condition_bt_node SHARED plugins/condition/is_battery_low_condition.cpp)
 list(APPEND plugin_libs nav2_is_battery_low_condition_bt_node)
 
+add_library(nav2_are_error_codes_active_condition_bt_node SHARED plugins/condition/are_error_codes_present_condition.cpp)
+list(APPEND plugin_libs nav2_are_error_codes_active_condition_bt_node)
+
+add_library(nav2_would_a_controller_recovery_help_condition_bt_node SHARED plugins/condition/would_a_controller_recovery_help_condition.cpp)
+list(APPEND plugin_libs nav2_would_a_controller_recovery_help_condition_bt_node)
+
+add_library(nav2_would_a_planner_recovery_help_condition_bt_node SHARED plugins/condition/would_a_planner_recovery_help_condition.cpp)
+list(APPEND plugin_libs nav2_would_a_planner_recovery_help_condition_bt_node)
+
+add_library(nav2_would_a_smoother_recovery_help_condition_bt_node SHARED plugins/condition/would_a_smoother_recovery_help_condition.cpp)
+list(APPEND plugin_libs nav2_would_a_smoother_recovery_help_condition_bt_node)
+
 add_library(nav2_reinitialize_global_localization_service_bt_node SHARED plugins/action/reinitialize_global_localization_service.cpp)
 list(APPEND plugin_libs nav2_reinitialize_global_localization_service_bt_node)
 
@@ -201,6 +213,7 @@ list(APPEND plugin_libs nav2_progress_checker_selector_bt_node)
 add_library(nav2_goal_updated_controller_bt_node SHARED plugins/decorator/goal_updated_controller.cpp)
 list(APPEND plugin_libs nav2_goal_updated_controller_bt_node)
 
+
 foreach(bt_plugin ${plugin_libs})
   ament_target_dependencies(${bt_plugin} ${dependencies})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
@@ -213,11 +226,15 @@ install(TARGETS ${library_name}
   RUNTIME DESTINATION bin
 )
 
+set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+configure_file(plugins_list.hpp.in ${GENERATED_DIR}/plugins_list.hpp)
+
 install(DIRECTORY include/
   DESTINATION include/
 )
 
 install(FILES nav2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
+install(FILES ${GENERATED_DIR}/plugins_list.hpp DESTINATION include/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

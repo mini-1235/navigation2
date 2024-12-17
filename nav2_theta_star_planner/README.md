@@ -57,7 +57,7 @@ Below are the default values of the parameters :
 ```
 planner_server:
   ros__parameters:
-    planner_plugin_types: ["nav2_theta_star_planner/ThetaStarPlanner"]
+    planner_plugin_types: ["nav2_theta_star_planner::ThetaStarPlanner"]
     use_sim_time: True
     planner_plugin_ids: ["GridBased"]
     GridBased:

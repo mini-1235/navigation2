@@ -13,6 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 nav2_package() #Calls the nav2_package.cmake file
 add_compile_options(-O3)
@@ -35,6 +36,7 @@ set(dependencies ament_cmake
   rclcpp_action
   rclcpp_lifecycle
   tf2_ros
+  cv_bridge
 )
 
 
