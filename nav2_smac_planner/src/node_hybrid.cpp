@@ -51,7 +51,7 @@ ObstacleHeuristicQueue NodeHybrid::obstacle_heuristic_queue;
 // cell. Though this could be later modified to project a certain
 // amount of time or particular distance forward.
 
-// http://planning.cs.uiuc.edu/node821.html
+// http://planning.cs.uiuc.edu/planning/node821.html
 // Model for ackermann style vehicle with minimum radius restriction
 void HybridMotionTable::initDubin(
   unsigned int & size_x_in,
@@ -177,7 +177,7 @@ void HybridMotionTable::initDubin(
   }
 }
 
-// http://planning.cs.uiuc.edu/node822.html
+// http://planning.cs.uiuc.edu/planning/node822.html
 // Same as Dubin model but now reverse is valid
 // See notes in Dubin for explanation
 void HybridMotionTable::initReedsShepp(
@@ -442,12 +442,18 @@ float NodeHybrid::getTraversalCost(const NodePtr & child)
 
 float NodeHybrid::getHeuristicCost(
   const Coordinates & node_coords,
-  const Coordinates & goal_coords)
+  const CoordinateVector & goals_coords)
 {
+  // obstacle heuristic does not depend on goal heading
   const float obstacle_heuristic =
-    getObstacleHeuristic(node_coords, goal_coords, motion_table.cost_penalty);
-  const float dist_heuristic = getDistanceHeuristic(node_coords, goal_coords, obstacle_heuristic);
-  return std::max(obstacle_heuristic, dist_heuristic);
+    getObstacleHeuristic(node_coords, goals_coords[0], motion_table.cost_penalty);
+  float distance_heuristic = std::numeric_limits<float>::max();
+  for (unsigned int i = 0; i < goals_coords.size(); i++) {
+    distance_heuristic = std::min(
+      distance_heuristic,
+      getDistanceHeuristic(node_coords, goals_coords[i], obstacle_heuristic));
+  }
+  return std::max(obstacle_heuristic, distance_heuristic);
 }
 
 void NodeHybrid::initMotionModel(
