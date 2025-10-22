@@ -95,6 +95,7 @@ NavfnPlanner::activate()
   RCLCPP_INFO(
     logger_, "Activating plugin %s of type NavfnPlanner",
     name_.c_str());
+  param_handler_->activate();
 }
 
 void
@@ -103,7 +104,7 @@ NavfnPlanner::deactivate()
   RCLCPP_INFO(
     logger_, "Deactivating plugin %s of type NavfnPlanner",
     name_.c_str());
-  auto node = node_.lock();
+  param_handler_->deactivate();
 }
 
 void
