@@ -35,20 +35,11 @@ ParameterHandler::ParameterHandler(
   plugin_name_ = plugin_name;
   logger_ = logger;
 
-  // Initialize parameters
-  // Declare this plugin's parameters
-  declare_parameter_if_not_declared(node, plugin_name_ + ".tolerance", rclcpp::ParameterValue(0.5));
-  node->get_parameter(plugin_name_ + ".tolerance", params_.tolerance);
-  declare_parameter_if_not_declared(node, plugin_name_ + ".use_astar",
-    rclcpp::ParameterValue(false));
-  node->get_parameter(plugin_name_ + ".use_astar", params_.use_astar);
-  declare_parameter_if_not_declared(node, plugin_name_ + ".allow_unknown",
-    rclcpp::ParameterValue(true));
-  node->get_parameter(plugin_name_ + ".allow_unknown", params_.allow_unknown);
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_final_approach_orientation", rclcpp::ParameterValue(false));
-  node->get_parameter(plugin_name_ + ".use_final_approach_orientation",
-    params_.use_final_approach_orientation);
+  params_.tolerance = node->declare_or_get_parameter(plugin_name_ + ".tolerance", 0.5);
+  params_.use_astar = node->declare_or_get_parameter(plugin_name_ + ".use_astar", false);
+  params_.allow_unknown = node->declare_or_get_parameter(plugin_name_ + ".allow_unknown", true);
+  params_.use_final_approach_orientation = node->declare_or_get_parameter(plugin_name_ +
+    ".use_final_approach_orientation", false);
 }
 
 void ParameterHandler::activate()
