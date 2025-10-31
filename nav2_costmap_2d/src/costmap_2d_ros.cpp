@@ -90,7 +90,7 @@ Costmap2DROS::Costmap2DROS(
   const std::string & name,
   const std::string & parent_namespace,
   const bool & use_sim_time,
-  const rclcpp::NodeOptions & options)
+  rclcpp::NodeOptions options)
 : nav2::LifecycleNode(name, "",
     getChildNodeOptions(name, parent_namespace, use_sim_time, options)
 ),

@@ -44,7 +44,7 @@ public:
    * @brief Constructor for the VectorObjectServer
    * @param options Additional options to control creation of the node.
    */
-  explicit VectorObjectServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit VectorObjectServer(rclcpp::NodeOptions options = rclcpp::NodeOptions());
 
 protected:
   /**

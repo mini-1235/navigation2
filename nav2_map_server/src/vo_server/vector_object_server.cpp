@@ -33,7 +33,7 @@ using namespace std::placeholders;
 namespace nav2_map_server
 {
 
-VectorObjectServer::VectorObjectServer(const rclcpp::NodeOptions & options)
+VectorObjectServer::VectorObjectServer(rclcpp::NodeOptions options)
 : nav2::LifecycleNode("vector_object_server", "", options), process_map_(false)
 {}
 

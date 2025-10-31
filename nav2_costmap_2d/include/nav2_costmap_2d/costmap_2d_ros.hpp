@@ -92,7 +92,7 @@ public:
     const std::string & name,
     const std::string & parent_namespace = "/",
     const bool & use_sim_time = false,
-    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+    rclcpp::NodeOptions options = rclcpp::NodeOptions());
 
   /**
    * @brief Common initialization for constructors

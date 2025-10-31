@@ -21,7 +21,7 @@ using std::placeholders::_2;
 namespace nav2_route
 {
 
-RouteServer::RouteServer(const rclcpp::NodeOptions & options)
+RouteServer::RouteServer(rclcpp::NodeOptions options)
 : nav2::LifecycleNode("route_server", "", options)
 {}
 

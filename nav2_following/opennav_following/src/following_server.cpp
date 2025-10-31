@@ -28,7 +28,7 @@ using std::placeholders::_1;
 namespace opennav_following
 {
 
-FollowingServer::FollowingServer(const rclcpp::NodeOptions & options)
+FollowingServer::FollowingServer(rclcpp::NodeOptions options)
 : nav2::LifecycleNode("following_server", "", options)
 {
   RCLCPP_INFO(get_logger(), "Creating %s", get_name());

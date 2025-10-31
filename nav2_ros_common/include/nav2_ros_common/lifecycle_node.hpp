@@ -59,7 +59,9 @@ public:
     const std::string & node_name,
     const std::string & ns,
     rclcpp::NodeOptions options = rclcpp::NodeOptions())
-  : rclcpp_lifecycle::LifecycleNode(node_name, ns, options.use_intra_process_comms(true), getEnableLifecycleServices(options))
+  : rclcpp_lifecycle::LifecycleNode(
+      node_name, ns, options.use_intra_process_comms(true),
+      getEnableLifecycleServices(options))
   {
     // server side never times out from lifecycle manager
     this->declare_parameter(bond::msg::Constants::DISABLE_HEARTBEAT_TIMEOUT_PARAM, true);
@@ -85,8 +87,8 @@ public:
    */
   LifecycleNode(
     const std::string & node_name,
-    const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : nav2::LifecycleNode(node_name, "", options)
+    rclcpp::NodeOptions options = rclcpp::NodeOptions())
+  : nav2::LifecycleNode(node_name, "", options.use_intra_process_comms(true))
   {}
 
   virtual ~LifecycleNode()
@@ -433,7 +435,7 @@ private:
    * @param options NodeOptions to check for the parameter
    * @return true if lifecycle services should be enabled, false otherwise
    */
-  static bool getEnableLifecycleServices(const rclcpp::NodeOptions & options)
+  static bool getEnableLifecycleServices(rclcpp::NodeOptions options)
   {
     // Check if the parameter is explicitly set in NodeOptions
     for (const auto & param : options.parameter_overrides()) {

@@ -70,7 +70,7 @@ public:
    * @brief A constructor for nav2_route::RouteServer
    * @param options Additional options to control creation of the node.
    */
-  explicit RouteServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit RouteServer(rclcpp::NodeOptions options = rclcpp::NodeOptions());
   /**
    * @brief A destructor for nav2_route::RouteServer
    */

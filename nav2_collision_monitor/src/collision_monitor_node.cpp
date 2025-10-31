@@ -31,8 +31,8 @@ namespace nav2_collision_monitor
 {
 
 CollisionMonitor::CollisionMonitor(rclcpp::NodeOptions options)
-: nav2::LifecycleNode("collision_monitor", "", options),
-  process_active_(false), robot_action_prev_{DO_NOTHING, {-1.0, -1.0, -1.0}, ""},
+: nav2::LifecycleNode("collision_monitor", options),
+  enabled_{true}, process_active_(false), robot_action_prev_{DO_NOTHING, {-1.0, -1.0, -1.0}, ""},
   stop_stamp_{0, 0, get_clock()->get_clock_type()}, stop_pub_timeout_(1.0, 0.0)
 {
 }
