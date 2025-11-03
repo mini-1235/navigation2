@@ -452,7 +452,7 @@ Nav2Panel::Nav2Panel(QWidget * parent)
   accumulatedNTPTransition->setTargetState(idle_);
   accumulated_nav_through_poses_->addTransition(accumulatedNTPTransition);
 
-  auto options = rclcpp::NodeOptions().arguments(
+  auto options = rclcpp::NodeOptions().use_intra_process_comms(true).arguments(
     {"--ros-args", "--remap", "__node:=rviz_navigation_dialog_action_client", "--"});
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
   executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();

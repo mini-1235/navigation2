@@ -75,7 +75,7 @@ rclcpp::NodeOptions getChildNodeOptions(
   const std::string & name,
   const std::string & parent_namespace,
   const bool & use_sim_time,
-  const rclcpp::NodeOptions & parent_options)
+  rclcpp::NodeOptions parent_options)
 {
   std::vector<std::string> new_arguments = parent_options.arguments();
   nav2::replaceOrAddArgument(new_arguments, "-r", "__ns",

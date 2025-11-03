@@ -443,7 +443,7 @@ rclcpp::NodeOptions getChildNodeOptions(
   const std::string & name,
   const std::string & parent_namespace,
   const bool & use_sim_time,
-  const rclcpp::NodeOptions & parent_options);
+  rclcpp::NodeOptions parent_options);
 
 }  // namespace nav2_costmap_2d
 

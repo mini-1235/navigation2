@@ -88,7 +88,7 @@ public:
   LifecycleNode(
     const std::string & node_name,
     rclcpp::NodeOptions options = rclcpp::NodeOptions())
-  : nav2::LifecycleNode(node_name, "", options.use_intra_process_comms(true))
+  : nav2::LifecycleNode(node_name, "", options)
   {}
 
   virtual ~LifecycleNode()
