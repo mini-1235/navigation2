@@ -80,7 +80,7 @@ protected:
    * @brief Laser scanner data callback
    * @param msg Shared pointer to LaserScan message
    */
-  void dataCallback(sensor_msgs::msg::LaserScan::ConstSharedPtr msg);
+  void dataCallback(const sensor_msgs::msg::LaserScan::ConstSharedPtr & msg);
 
   // ----- Variables -----
 

@@ -86,7 +86,7 @@ protected:
    * @brief Range sensor data callback
    * @param msg Shared pointer to Range sensor message
    */
-  void dataCallback(sensor_msgs::msg::Range::ConstSharedPtr msg);
+  void dataCallback(const sensor_msgs::msg::Range::ConstSharedPtr & msg);
 
   // ----- Variables -----
 

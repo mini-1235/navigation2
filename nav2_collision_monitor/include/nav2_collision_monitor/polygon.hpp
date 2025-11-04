@@ -230,7 +230,7 @@ protected:
    * @brief Dynamic polygon callback
    * @param msg Shared pointer to the polygon message
    */
-  void polygonCallback(geometry_msgs::msg::PolygonStamped::ConstSharedPtr msg);
+  void polygonCallback(const geometry_msgs::msg::PolygonStamped::ConstSharedPtr & msg);
 
   /**
    * @brief Callback executed when a parameter change is detected

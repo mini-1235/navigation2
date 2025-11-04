@@ -166,7 +166,7 @@ void Circle::updatePolygon(double radius)
   }
 }
 
-void Circle::radiusCallback(std_msgs::msg::Float32::ConstSharedPtr msg)
+void Circle::radiusCallback(const std_msgs::msg::Float32::ConstSharedPtr & msg)
 {
   RCLCPP_INFO(
     logger_,

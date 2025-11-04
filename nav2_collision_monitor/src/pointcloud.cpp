@@ -169,7 +169,7 @@ void PointCloud::getParameters(std::string & source_topic)
     source_name_ + ".transport_type", std::string("raw"));
 }
 
-void PointCloud::dataCallback(sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
+void PointCloud::dataCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & msg)
 {
   data_ = msg;
 }

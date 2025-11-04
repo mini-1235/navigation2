@@ -129,7 +129,7 @@ void pointCloud2Helper(
   }
 }
 
-void voxelCallback(const nav2_msgs::msg::VoxelGrid::ConstSharedPtr grid)
+void voxelCallback(const nav2_msgs::msg::VoxelGrid::ConstSharedPtr & grid)
 {
   if (grid->data.empty()) {
     RCLCPP_ERROR(g_node->get_logger(), "Received empty voxel grid");

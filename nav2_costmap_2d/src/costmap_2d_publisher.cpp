@@ -181,7 +181,11 @@ void Costmap2DPublisher::prepareCostmap()
   costmap_raw_->data.resize(costmap_raw_->metadata.size_x * costmap_raw_->metadata.size_y);
 
   unsigned char * data = costmap_->getCharMap();
+  // RCLCPP_INFO(logger_, "Publisher costmap data address: %p", (void*)data);  
   memcpy(costmap_raw_->data.data(), data, costmap_raw_->data.size());
+  // RCLCPP_INFO(logger_, "[Publisher: %s] Publisher message data address: %p",   
+  //           topic_name_.c_str(),  
+  //           (void*)costmap_raw_->data.data());
 }
 
 std::unique_ptr<map_msgs::msg::OccupancyGridUpdate> Costmap2DPublisher::createGridUpdateMsg()

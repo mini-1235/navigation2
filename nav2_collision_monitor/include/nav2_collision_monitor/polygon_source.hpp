@@ -96,7 +96,7 @@ protected:
    * @brief PolygonSource data callback
    * @param msg Shared pointer to PolygonSource message
    */
-  void dataCallback(geometry_msgs::msg::PolygonInstanceStamped::ConstSharedPtr msg);
+  void dataCallback(const geometry_msgs::msg::PolygonInstanceStamped::ConstSharedPtr & msg);
 
   // ----- Variables -----
 

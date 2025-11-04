@@ -103,7 +103,7 @@ bool Scan::getData(
   return true;
 }
 
-void Scan::dataCallback(sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
+void Scan::dataCallback(const sensor_msgs::msg::LaserScan::ConstSharedPtr & msg)
 {
   data_ = msg;
 }

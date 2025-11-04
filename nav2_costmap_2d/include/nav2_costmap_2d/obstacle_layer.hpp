@@ -153,7 +153,7 @@ public:
    * @param buffer A pointer to the observation buffer to update
    */
   void laserScanCallback(
-    sensor_msgs::msg::LaserScan::ConstSharedPtr message,
+    const sensor_msgs::msg::LaserScan::ConstSharedPtr & message,
     const std::shared_ptr<nav2_costmap_2d::ObservationBuffer> & buffer);
 
   /**
@@ -162,7 +162,7 @@ public:
    * @param buffer A pointer to the observation buffer to update
    */
   void laserScanValidInfCallback(
-    sensor_msgs::msg::LaserScan::ConstSharedPtr message,
+    const sensor_msgs::msg::LaserScan::ConstSharedPtr & message,
     const std::shared_ptr<nav2_costmap_2d::ObservationBuffer> & buffer);
 
   /**
@@ -171,7 +171,7 @@ public:
    * @param buffer A pointer to the observation buffer to update
    */
   void pointCloud2Callback(
-    sensor_msgs::msg::PointCloud2::ConstSharedPtr message,
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & message,
     const std::shared_ptr<nav2_costmap_2d::ObservationBuffer> & buffer);
 
   // for testing purposes

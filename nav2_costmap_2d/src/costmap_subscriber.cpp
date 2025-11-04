@@ -32,10 +32,13 @@ std::shared_ptr<Costmap2D> CostmapSubscriber::getCostmap()
   return costmap_;
 }
 
-void CostmapSubscriber::costmapCallback(const nav2_msgs::msg::Costmap::SharedPtr msg)
+void CostmapSubscriber::costmapCallback(const nav2_msgs::msg::Costmap::ConstSharedPtr & msg)
 {
   {
     std::lock_guard<std::mutex> lock(costmap_msg_mutex_);
+    // RCLCPP_INFO(logger_, "[Subscriber: %s] Received costmap message data address: %p",   
+    //         topic_name_.c_str(),  
+    //         (void*)msg->data.data());
     costmap_msg_ = msg;
     frame_id_ = costmap_msg_->header.frame_id;
   }
@@ -50,7 +53,7 @@ void CostmapSubscriber::costmapCallback(const nav2_msgs::msg::Costmap::SharedPtr
 }
 
 void CostmapSubscriber::costmapUpdateCallback(
-  const nav2_msgs::msg::CostmapUpdate::SharedPtr update_msg)
+  const nav2_msgs::msg::CostmapUpdate::ConstSharedPtr & update_msg)
 {
   if (isCostmapReceived()) {
     if (costmap_msg_) {

@@ -87,7 +87,7 @@ protected:
    * @brief PointCloud data callback
    * @param msg Shared pointer to PointCloud message
    */
-  void dataCallback(sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
+  void dataCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & msg);
 
   /**
    * @brief Callback executed when a parameter change is detected

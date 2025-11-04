@@ -105,7 +105,7 @@ protected:
    * @brief Dynamic circle radius callback
    * @param msg Shared pointer to the radius value message
    */
-  void radiusCallback(std_msgs::msg::Float32::ConstSharedPtr msg);
+  void radiusCallback(const std_msgs::msg::Float32::ConstSharedPtr & msg);
 
 
   // ----- Variables -----

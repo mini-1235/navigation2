@@ -559,7 +559,7 @@ Polygon::dynamicParametersCallback(
   return result;
 }
 
-void Polygon::polygonCallback(geometry_msgs::msg::PolygonStamped::ConstSharedPtr msg)
+void Polygon::polygonCallback(const geometry_msgs::msg::PolygonStamped::ConstSharedPtr & msg)
 {
   RCLCPP_INFO_THROTTLE(
     logger_,

@@ -141,7 +141,7 @@ void Range::getParameters(std::string & source_topic)
     source_name_ + ".obstacles_angle", M_PI / 180);
 }
 
-void Range::dataCallback(sensor_msgs::msg::Range::ConstSharedPtr msg)
+void Range::dataCallback(const sensor_msgs::msg::Range::ConstSharedPtr & msg)
 {
   data_ = msg;
 }

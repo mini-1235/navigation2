@@ -66,7 +66,7 @@ V_Cell g_cells;
 rclcpp::Node::SharedPtr g_node;
 rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub;
 
-void voxelCallback(const nav2_msgs::msg::VoxelGrid::ConstSharedPtr grid)
+void voxelCallback(const nav2_msgs::msg::VoxelGrid::ConstSharedPtr & grid)
 {
   if (grid->data.empty()) {
     RCLCPP_ERROR(g_node->get_logger(), "Received voxel grid");

@@ -278,7 +278,7 @@ StaticLayer::interpretValue(unsigned char value)
 }
 
 void
-StaticLayer::incomingMap(const nav_msgs::msg::OccupancyGrid::SharedPtr new_map)
+StaticLayer::incomingMap(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr & new_map)
 {
   if (!nav2::validateMsg(*new_map)) {
     RCLCPP_ERROR(logger_, "Received map message is malformed. Rejecting.");
@@ -294,7 +294,7 @@ StaticLayer::incomingMap(const nav_msgs::msg::OccupancyGrid::SharedPtr new_map)
 }
 
 void
-StaticLayer::incomingUpdate(map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update)
+StaticLayer::incomingUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr & update)
 {
   std::lock_guard<Costmap2D::mutex_t> guard(*getMutex());
   if (update->y < static_cast<int32_t>(y_) ||
