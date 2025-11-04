@@ -164,7 +164,8 @@ void PolygonSource::getParameters(std::string & source_topic)
     source_name_ + ".sampling_distance", 0.1);
 }
 
-void PolygonSource::dataCallback(const geometry_msgs::msg::PolygonInstanceStamped::ConstSharedPtr & msg)
+void PolygonSource::dataCallback(
+  const geometry_msgs::msg::PolygonInstanceStamped::ConstSharedPtr & msg)
 {
   auto node = node_.lock();
   if (!node) {

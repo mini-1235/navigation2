@@ -36,8 +36,8 @@ void CostmapSubscriber::costmapCallback(const nav2_msgs::msg::Costmap::ConstShar
 {
   {
     std::lock_guard<std::mutex> lock(costmap_msg_mutex_);
-    // RCLCPP_INFO(logger_, "[Subscriber: %s] Received costmap message data address: %p",   
-    //         topic_name_.c_str(),  
+    // RCLCPP_INFO(logger_, "[Subscriber: %s] Received costmap message data address: %p",
+    //         topic_name_.c_str(),
     //         (void*)msg->data.data());
     costmap_msg_ = msg;
     frame_id_ = costmap_msg_->header.frame_id;
