@@ -43,7 +43,7 @@ public:
 
   bool isOdomSmoother() {return odom_smoother_ ? true : false;}
   bool hasCommandMsg() {return last_command_time_.nanoseconds() != 0;}
-  geometry_msgs::msg::TwistStamped::SharedPtr lastCommandMsg() {return command_;}
+  geometry_msgs::msg::TwistStamped lastCommandMsg() {return command_;}
 
   void sendCommandMsg(geometry_msgs::msg::TwistStamped::SharedPtr msg)
   {
@@ -647,7 +647,7 @@ TEST(VelocitySmootherTest, testCommandCallback)
   executor.spin_some();
 
   EXPECT_TRUE(smoother->hasCommandMsg());
-  EXPECT_EQ(smoother->lastCommandMsg()->twist.linear.x, 100.0);
+  EXPECT_EQ(smoother->lastCommandMsg().twist.linear.x, 100.0);
 }
 
 TEST(VelocitySmootherTest, testClosedLoopSub)
