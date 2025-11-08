@@ -148,9 +148,10 @@ public:
     const std::chrono::nanoseconds & timeout,
     const rclcpp::Time & stamp);
   bool waitState(const std::chrono::nanoseconds & timeout);
-  void stateCallback(nav2_msgs::msg::CollisionDetectorState::SharedPtr msg);
+  void stateCallback(const nav2_msgs::msg::CollisionDetectorState::ConstSharedPtr & msg);
   bool waitCollisionPointsMarker(const std::chrono::nanoseconds & timeout);
-  void collisionPointsMarkerCallback(visualization_msgs::msg::MarkerArray::SharedPtr msg);
+  void collisionPointsMarkerCallback(
+    const visualization_msgs::msg::MarkerArray::ConstSharedPtr & msg);
 
 protected:
   // CollisionDetector node
@@ -168,12 +169,12 @@ protected:
     polygon_source_pub_;
 
   nav2::Subscription<nav2_msgs::msg::CollisionDetectorState>::SharedPtr state_sub_;
-  nav2_msgs::msg::CollisionDetectorState::SharedPtr state_msg_;
+  nav2_msgs::msg::CollisionDetectorState::ConstSharedPtr state_msg_;
 
   // CollisionMonitor collision points markers
   nav2::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr
     collision_points_marker_sub_;
-  visualization_msgs::msg::MarkerArray::SharedPtr collision_points_marker_msg_;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr collision_points_marker_msg_;
 };  // Tester
 
 Tester::Tester()
@@ -246,12 +247,13 @@ bool Tester::waitCollisionPointsMarker(const std::chrono::nanoseconds & timeout)
   return false;
 }
 
-void Tester::stateCallback(nav2_msgs::msg::CollisionDetectorState::SharedPtr msg)
+void Tester::stateCallback(const nav2_msgs::msg::CollisionDetectorState::ConstSharedPtr & msg)
 {
   state_msg_ = msg;
 }
 
-void Tester::collisionPointsMarkerCallback(visualization_msgs::msg::MarkerArray::SharedPtr msg)
+void Tester::collisionPointsMarkerCallback(
+  const visualization_msgs::msg::MarkerArray::ConstSharedPtr & msg)
 {
   collision_points_marker_msg_ = msg;
 }
