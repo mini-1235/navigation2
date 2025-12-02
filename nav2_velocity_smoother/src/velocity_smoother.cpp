@@ -340,9 +340,9 @@ void VelocitySmoother::smootherTimer()
   }
 
   // Apply absolute velocity restrictions to the command
-  if(!is_6dof_) {
-    command_.twist.linear.x = std::clamp(
-      command_.twist.linear.x, min_velocities_[0],
+  if (!is_6dof_) {
+    command_->twist.linear.x = std::clamp(
+      command_->twist.linear.x, min_velocities_[0],
       max_velocities_[0]);
     command_.twist.linear.y = std::clamp(
       command_.twist.linear.y, min_velocities_[1],
@@ -379,7 +379,7 @@ void VelocitySmoother::smootherTimer()
   double eta = 1.0;
   if (scale_velocities_) {
     double curr_eta = -1.0;
-    if(!is_6dof_) {
+    if (!is_6dof_) {
       curr_eta = findEtaConstraint(
         current_.twist.linear.x, command_.twist.linear.x, max_accels_[0], max_decels_[0]);
       if (curr_eta > 0.0 && std::fabs(1.0 - curr_eta) > std::fabs(1.0 - eta)) {
@@ -436,7 +436,7 @@ void VelocitySmoother::smootherTimer()
     }
   }
 
-  if(!is_6dof_) {
+  if (!is_6dof_) {
     cmd_vel->twist.linear.x = applyConstraints(
       current_.twist.linear.x, command_.twist.linear.x, max_accels_[0], max_decels_[0], eta);
     cmd_vel->twist.linear.y = applyConstraints(
@@ -462,7 +462,7 @@ void VelocitySmoother::smootherTimer()
 
 
   // Apply deadband restrictions & publish
-  if(!is_6dof_) {
+  if (!is_6dof_) {
     cmd_vel->twist.linear.x =
       fabs(cmd_vel->twist.linear.x) < deadband_velocities_[0] ? 0.0 : cmd_vel->twist.linear.x;
     cmd_vel->twist.linear.y =
@@ -525,8 +525,9 @@ VelocitySmoother::dynamicParametersCallback(std::vector<rclcpp::Parameter> param
     } else if (param_type == ParameterType::PARAMETER_DOUBLE_ARRAY) {
       size_t size = is_6dof_ ? 6 : 3;
       if (parameter.as_double_array().size() != size) {
-        RCLCPP_WARN(get_logger(), "Invalid size of parameter %s. Must be size %ld",
-            param_name.c_str(), size);
+        RCLCPP_WARN(
+          get_logger(), "Invalid size of parameter %s. Must be size %ld",
+          param_name.c_str(), size);
         result.successful = false;
         break;
       }
