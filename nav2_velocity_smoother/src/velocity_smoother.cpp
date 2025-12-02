@@ -341,8 +341,8 @@ void VelocitySmoother::smootherTimer()
 
   // Apply absolute velocity restrictions to the command
   if (!is_6dof_) {
-    command_->twist.linear.x = std::clamp(
-      command_->twist.linear.x, min_velocities_[0],
+    command_.twist.linear.x = std::clamp(
+      command_.twist.linear.x, min_velocities_[0],
       max_velocities_[0]);
     command_.twist.linear.y = std::clamp(
       command_.twist.linear.y, min_velocities_[1],
