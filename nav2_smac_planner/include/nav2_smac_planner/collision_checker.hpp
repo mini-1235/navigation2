@@ -124,7 +124,8 @@ public:
 
 protected:
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
-  std::vector<nav2_costmap_2d::Footprint> oriented_footprints_;
+  // std::vector<nav2_costmap_2d::Footprint> oriented_footprints_;
+  std::vector<std::vector<std::pair<int, int>>> precomputed_map_coords_;
   nav2_costmap_2d::Footprint unoriented_footprint_;
   float center_cost_;
   bool footprint_is_radius_{false};

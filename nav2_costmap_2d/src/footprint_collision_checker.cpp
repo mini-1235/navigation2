@@ -55,6 +55,7 @@ double FootprintCollisionChecker<CostmapT>::footprintCost(const Footprint & foot
   if (!worldToMap(footprint[0].x, footprint[0].y, x0, y0)) {
     return static_cast<double>(LETHAL_OBSTACLE);
   }
+  // std::cout << "x0" << x0 << "y0" << y0 << std::endl;
 
   // cache the start to eliminate a worldToMap call
   unsigned int xstart = x0;
@@ -66,8 +67,10 @@ double FootprintCollisionChecker<CostmapT>::footprintCost(const Footprint & foot
     if (!worldToMap(footprint[i + 1].x, footprint[i + 1].y, x1, y1)) {
       return static_cast<double>(LETHAL_OBSTACLE);
     }
+    // std::cout << "x1" << x1 << "y1" << y1 << std::endl;
 
     footprint_cost = std::max(lineCost(x0, x1, y0, y1), footprint_cost);
+    // std::cout << "[footprint]" << footprint_cost << std::endl;
 
     // the second point is next iteration's first point
     x0 = x1;
@@ -91,7 +94,9 @@ double FootprintCollisionChecker<CostmapT>::lineCost(int x0, int x1, int y0, int
   double point_cost = -1.0;
 
   for (nav2_util::LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {
+    // std::cout << "point x" << line.getX() << "point y" << line.getY();
     point_cost = pointCost(line.getX(), line.getY());   // Score the current point
+    // std::cout << "point cost" << point_cost << std::endl;
 
     // if in collision, no need to continue
     if (point_cost == static_cast<double>(LETHAL_OBSTACLE)) {

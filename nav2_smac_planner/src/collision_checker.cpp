@@ -13,6 +13,7 @@
 // limitations under the License. Reserved.
 
 #include "nav2_smac_planner/collision_checker.hpp"
+#include "nav2_util/line_iterator.hpp"
 
 namespace nav2_smac_planner
 {
@@ -76,8 +77,10 @@ void GridCollisionChecker::setFootprint(
     return;
   }
 
-  oriented_footprints_.clear();
-  oriented_footprints_.reserve(angles_.size());
+  // oriented_footprints_.clear();
+  // oriented_footprints_.reserve(angles_.size());
+  precomputed_map_coords_.clear();
+  precomputed_map_coords_.reserve(angles_.size());
   double sin_th, cos_th;
   geometry_msgs::msg::Point new_pt;
   const unsigned int footprint_size = footprint.size();
@@ -88,14 +91,37 @@ void GridCollisionChecker::setFootprint(
     cos_th = cos(angles_[i]);
     nav2_costmap_2d::Footprint oriented_footprint;
     oriented_footprint.reserve(footprint_size);
+    std::vector<std::pair<int, int>> map_points;
+    map_points.reserve(footprint_size);
 
     for (unsigned int j = 0; j < footprint_size; j++) {
       new_pt.x = footprint[j].x * cos_th - footprint[j].y * sin_th;
       new_pt.y = footprint[j].x * sin_th + footprint[j].y * cos_th;
+      // unsigned int mx, my;  
       oriented_footprint.push_back(new_pt);
+      // if (worldToMap(new_pt.x, new_pt.y, mx, my)) {  
+      //   map_points.emplace_back(static_cast<int>(mx), static_cast<int>(my));  
+      // }
     }
 
-    oriented_footprints_.push_back(oriented_footprint);
+    // oriented_footprints_.push_back(oriented_footprint);
+
+    std::vector<std::pair<int, int>> line_cells;
+    // For each edge in the footprint, get line iterator cells
+    for (unsigned int j = 0; j < oriented_footprint.size(); j++) {  
+      unsigned int j_next = (j + 1) % oriented_footprint.size();   // Wrap around for closed polygon  
+      // Convert to map coordinates (assuming robot at origin)  
+      int x0 = static_cast<int>(oriented_footprint[j].x / costmap_->getResolution());  
+      int y0 = static_cast<int>(oriented_footprint[j].y / costmap_->getResolution());  
+      int x1 = static_cast<int>(oriented_footprint[j_next].x / costmap_->getResolution());  
+      int y1 = static_cast<int>(oriented_footprint[j_next].y / costmap_->getResolution());  
+        
+      // Use line iterator to get all cells along the edge  
+      for (nav2_util::LineIterator line(x0, y0, x1, y1); line.isValid(); line.advance()) {  
+        line_cells.emplace_back(line.getX(), line.getY());  
+      }  
+    }
+    precomputed_map_coords_.push_back(line_cells);
   }
 
   unoriented_footprint_ = footprint;
@@ -122,16 +148,20 @@ bool GridCollisionChecker::inCollision(
     // if footprint, then we check for the footprint's points, but first see
     // if the robot is even potentially in an inscribed collision
     if (center_cost_ < possible_collision_cost_ && possible_collision_cost_ > 0.0f) {
+      // std::cout << "center cost" << center_cost_ << std::endl;
+      // std::cout << "condition1" << std::endl;
       return false;
     }
 
     // If its inscribed, in collision, or unknown in the middle,
     // no need to even check the footprint, its invalid
     if (center_cost_ == UNKNOWN_COST && !traverse_unknown) {
+      // std::cout << "condition2" << std::endl;
       return true;
     }
 
     if (center_cost_ == INSCRIBED_COST || center_cost_ == OCCUPIED_COST) {
+      // std::cout << "condition3" << std::endl;
       return true;
     }
 
@@ -141,24 +171,75 @@ bool GridCollisionChecker::inCollision(
     double wx, wy;
     costmap_->mapToWorld(static_cast<double>(x), static_cast<double>(y), wx, wy);
     geometry_msgs::msg::Point new_pt;
-    const nav2_costmap_2d::Footprint & oriented_footprint = oriented_footprints_[angle_bin];
+    // const nav2_costmap_2d::Footprint & oriented_footprint = oriented_footprints_[angle_bin];
     nav2_costmap_2d::Footprint current_footprint;
-    current_footprint.reserve(oriented_footprint.size());
-    for (unsigned int i = 0; i < oriented_footprint.size(); ++i) {
-      new_pt.x = wx + oriented_footprint[i].x;
-      new_pt.y = wy + oriented_footprint[i].y;
-      current_footprint.push_back(new_pt);
+    // std::cout << "wx" << wx << "wy" << wy << std::endl;
+    // std::cout << "footprint" << std::endl;
+    // current_footprint.reserve(oriented_footprint.size());
+    // for (unsigned int i = 0; i < oriented_footprint.size(); ++i) {
+    //   new_pt.x = wx + oriented_footprint[i].x;
+    //   new_pt.y = wy + oriented_footprint[i].y;
+    // //   // std::cout << "wx" << new_pt.x << "wy" << new_pt.y << std::endl;
+    //   current_footprint.push_back(new_pt);
+    // }
+    // bool res1 = false;
+    // bool res2;
+    // std::cout << "robotx" << static_cast<int>(x) << "roboty" << static_cast<int>(y) << std::endl;
+    // std::cout << "robotx" << static_cast<int>(x+0.5) << "roboty" << static_cast<int>(y+0.5) << std::endl;
+    const auto & map_coords = precomputed_map_coords_[angle_bin];
+    const int robot_x = static_cast<int>(x+0.5);
+    const int robot_y = static_cast<int>(y+0.5);
+    const int max_x = static_cast<int>(costmap_->getSizeInCellsX());
+    const int max_y = static_cast<int>(costmap_->getSizeInCellsY());
+    // std::cout << "map coords size" << map_coords.size() << std::endl;
+    for (const auto & coord : map_coords) {
+      // std::cout << "mx" << coord.first << "my" << coord.second << std::endl;
+      int check_x = robot_x + coord.first;
+      int check_y = robot_y + coord.second;
+
+      // Check bounds
+      if (check_x < 0 || check_x >= max_x ||
+        check_y < 0 || check_y >= max_y)
+      {
+        // std::cout << "out of bounds" << std::endl;
+        // res1 = true;
+        return true;
+      }
+
+      unsigned char cost = costmap_->getCost(check_x, check_y);
+      // std::cout << "cost" << static_cast<int>(cost) << std::endl;
+      if (cost == UNKNOWN_COST && !traverse_unknown) {
+        // std::cout << "unknown cost" << std::endl;
+        // res1 = true;
+        return true;
+      }
+
+      if (cost >= OCCUPIED_COST) {
+        // std::cout << "larger than inscribed" << std::endl;
+        // res1 = true;
+        return true;
+      }
     }
+    // std::cout << "returning false" << std::endl;
+    return false;
+    // float footprint_cost = static_cast<float>(footprintCost(current_footprint));
 
-    float footprint_cost = static_cast<float>(footprintCost(current_footprint));
+    // if (footprint_cost == UNKNOWN_COST && traverse_unknown) {
+    //   // std::cout << "traveling unknown" << std::endl;
+    //   res2 = false;
+    // }
 
-    if (footprint_cost == UNKNOWN_COST && traverse_unknown) {
-      return false;
-    }
-
-    // if occupied or unknown and not to traverse unknown space
-    return footprint_cost >= OCCUPIED_COST;
+    // // if occupied or unknown and not to traverse unknown space
+    // std::cout << "footprint cost" << footprint_cost << std::endl;
+    // res2 = footprint_cost >= OCCUPIED_COST;
+    // if (res1 != res2){
+    //   std::cout << "result different " << std::endl;
+    //   std::cout << "res1" << res1 << "res2" << res2 << std::endl;
+    //   exit(1);
+    // }
+    // return res1;
   } else {
+    // std::cout << "center cost" << std::endl;
     // if radius, then we can check the center of the cost assuming inflation is used
     if (center_cost_ == UNKNOWN_COST && traverse_unknown) {
       return false;

@@ -26,15 +26,94 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 import numpy as np
 from numpy.typing import NDArray
 import rclpy
+import json
 from transforms3d.euler import euler2quat
 
+def save_test_cases(filename, test_cases):  
+    """Save start/goal pairs with full pose data to JSON file"""  
+    data = {  
+        'starts': [  
+            {  
+                'x': pose.pose.position.x,  
+                'y': pose.pose.position.y,  
+                'orientation': {  
+                    'x': pose.pose.orientation.x,  
+                    'y': pose.pose.orientation.y,  
+                    'z': pose.pose.orientation.z,  
+                    'w': pose.pose.orientation.w  
+                },  
+                'frame_id': pose.header.frame_id  
+            }   
+            for pose, _ in test_cases  
+        ],  
+        'goals': [  
+            {  
+                'x': pose.pose.position.x,  
+                'y': pose.pose.position.y,  
+                'orientation': {  
+                    'x': pose.pose.orientation.x,  
+                    'y': pose.pose.orientation.y,  
+                    'z': pose.pose.orientation.z,  
+                    'w': pose.pose.orientation.w  
+                },  
+                'frame_id': pose.header.frame_id  
+            }   
+            for _, pose in test_cases  
+        ]  
+    }  
+    with open(filename, 'w') as f:  
+        json.dump(data, f, indent=2) 
+
+
+def load_test_cases(filename):  
+    """Load start/goal pairs with full pose data from JSON file"""  
+    from geometry_msgs.msg import Quaternion  
+      
+    with open(filename, 'r') as f:  
+        data = json.load(f)  
+      
+    test_cases = []  
+    time_stamp = Time()  
+      
+    for start_data, goal_data in zip(data['starts'], data['goals']):  
+        start = PoseStamped()  
+        start.header.frame_id = start_data['frame_id']  
+        start.header.stamp = time_stamp  
+        start.pose.position.x = start_data['x']  
+        start.pose.position.y = start_data['y']  
+          
+        # Properly construct quaternion message  
+        start_quat = Quaternion()  
+        start_quat.x = start_data['orientation']['x']  
+        start_quat.y = start_data['orientation']['y']   
+        start_quat.z = start_data['orientation']['z']  
+        start_quat.w = start_data['orientation']['w']  
+        start.pose.orientation = start_quat  
+          
+        goal = PoseStamped()  
+        goal.header.frame_id = goal_data['frame_id']  
+        goal.header.stamp = time_stamp  
+        goal.pose.position.x = goal_data['x']  
+        goal.pose.position.y = goal_data['y']  
+          
+        # Properly construct quaternion message  
+        goal_quat = Quaternion()  
+        goal_quat.x = goal_data['orientation']['x']  
+        goal_quat.y = goal_data['orientation']['y']  
+        goal_quat.z = goal_data['orientation']['z']   
+        goal_quat.w = goal_data['orientation']['w']  
+        goal.pose.orientation = goal_quat  
+          
+        test_cases.append((start, goal))  
+      
+    return test_cases
 
 def getPlannerResults(
         navigator: BasicNavigator, initial_pose: PoseStamped,
         goal_pose: PoseStamped, planners: list[str]) -> list[PoseStamped]:
     results = []
     for planner in planners:
-        path = navigator._getPathImpl(initial_pose, goal_pose, planner, use_start=True)
+        path = navigator._getPathImpl(initial_pose, goal_pose, "GridBased", use_start=True)
         if path is not None and path.error_code == 0:
             results.append(path)
         else:
@@ -114,7 +193,7 @@ def main() -> None:
     costmap = np.asarray(costmap_msg.data)
     costmap.resize(costmap_msg.metadata.size_y, costmap_msg.metadata.size_x)
 
-    planners = ['Navfn', 'ThetaStar', 'SmacHybrid', 'Smac2d', 'SmacLattice']
+    planners = ['SmacHybrid']
     max_cost = 210
     side_buffer = 100
     time_stamp = navigator.get_clock().now().to_msg()
@@ -124,12 +203,15 @@ def main() -> None:
     random_pairs = 100
     res = costmap_msg.metadata.resolution
     i = 0
-    while len(results) != random_pairs:
-        print('Cycle: ', i, 'out of: ', random_pairs)
-        start = getRandomStart(costmap, max_cost, side_buffer, time_stamp, res)
-        goal = getRandomGoal(costmap, start, max_cost, side_buffer, time_stamp, res)
-        print('Start', start)
-        print('Goal', goal)
+    test_cases = load_test_cases('benchmark.json')  
+    for i, (start, goal) in enumerate(test_cases):
+        # print('Cycle: ', i, 'out of: ', random_pairs)
+        print('Cycle: ', i)
+        # start = getRandomStart(costmap, max_cost, side_buffer, time_stamp, res)
+        # goal = getRandomGoal(costmap, start, max_cost, side_buffer, time_stamp, res)
+        # print('Start', start)
+        # print('Goal', goal)
+        # test_cases.append((start, goal))
         result = getPlannerResults(navigator, start, goal, planners)
         if len(result) == len(planners):
             results.append(result)
@@ -138,6 +220,7 @@ def main() -> None:
             print('One of the planners was invalid')
 
     print('Write Results...')
+    save_test_cases('benchmarkkk.json', test_cases)
     with open(os.getcwd() + '/results.pickle', 'wb+') as f:
         pickle.dump(results, f, pickle.HIGHEST_PROTOCOL)
 
