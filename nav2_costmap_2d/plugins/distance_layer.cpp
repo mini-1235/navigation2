@@ -185,7 +185,8 @@ void DistanceLayer::updateCosts(
   const int roi_width = roi_max_i - roi_min_i;
   const int roi_height = roi_max_j - roi_min_j;
 
-  MatrixXfRM distance_map(roi_height, roi_width);
+  MatrixXfRM positive_map(roi_height, roi_width);
+  MatrixXfRM negative_map(roi_height, roi_width);
 
 #ifdef _OPENMP
   const int num_threads = getOptimalThreadCount();
@@ -196,36 +197,59 @@ void DistanceLayer::updateCosts(
     for (int x = 0; x < roi_width; x++) {
       const int src_x = x + roi_min_i;
       const unsigned char cell = master_array[src_y * size_x + src_x];
+      
+      // Positive DT initialization: Obstacles are 0, Free space is INF
       if (cell == LETHAL_OBSTACLE) {
-        distance_map(y, x) = 0.0f;
+        positive_map(y, x) = 0.0f;
+        negative_map(y, x) = DistanceTransform::DT_INF;
       } else if (cell == NO_INFORMATION && consider_unknown_as_obstacle_) {
-        distance_map(y, x) = 0.0f;
+        positive_map(y, x) = 0.0f;
+        negative_map(y, x) = DistanceTransform::DT_INF;
       } else {
-        distance_map(y, x) = DistanceTransform::DT_INF;
+        positive_map(y, x) = DistanceTransform::DT_INF;
+        negative_map(y, x) = 0.0f;
       }
     }
   }
 
-  DistanceTransform::distanceTransform2D(distance_map, roi_height, roi_width);
+  // Compute Euclidean Distance Transform for both maps
+  DistanceTransform::distanceTransform2D(positive_map, roi_height, roi_width);
+  DistanceTransform::distanceTransform2D(negative_map, roi_height, roi_width);
+
 
   for (int y = 0; y < roi_height; y++) {
     const int src_y = y + roi_min_j;
     for (int x = 0; x < roi_width; x++) {
       const int src_x = x + roi_min_i;
-      float dist = distance_map(y, x) * resolution_;
-      // If distance is greater than max_distance_, treat it as free space
-      if (dist > max_distance_) {
-        master_array[src_y * size_x + src_x] = FREE_SPACE;
-      } else if (dist < cost_scaling_distance_) {
-        // If distance is less than cost scaling distance, we assign it as inscribed inflated obstacle
-        master_array[src_y * size_x + src_x] = INSCRIBED_INFLATED_OBSTACLE;
+      
+      // Calculate Signed Distance
+      // positive_map contains squared distance to nearest obstacle
+      // negative_map contains squared distance to nearest free space
+      float dist_pos = std::sqrt(positive_map(y, x)) * resolution_;
+      float dist_neg = std::sqrt(negative_map(y, x)) * resolution_;
+      
+      // ESDF: Positive outside, Negative inside
+      // Inside obstacle: dist_pos is 0, dist_neg is > 0 -> result is negative
+      // Outside obstacle: dist_pos is > 0, dist_neg is 0 -> result is positive
+      float signed_dist = dist_pos - dist_neg;
+
+      // Now map this signed distance to Costmap values (0-255)
+      unsigned char cost = FREE_SPACE;
+      unsigned char old_cost = master_array[src_y * size_x + src_x];
+
+      if (signed_dist <= 0.0f) {
+        cost = LETHAL_OBSTACLE;
+      } else if (signed_dist > max_distance_) {
+        cost = FREE_SPACE;
+      } else if (signed_dist < cost_scaling_distance_) {
+        cost = INSCRIBED_INFLATED_OBSTACLE;
       } else {
-        // Scale cost linearly between INSCRIBED_INFLATED_OBSTACLE and FREE
-        float scale = (max_distance_ - dist) / (max_distance_ - cost_scaling_distance_);
-        unsigned char cost = static_cast<unsigned char>(
-          MAX_NON_OBSTACLE * scale);
-        master_array[src_y * size_x + src_x] = cost;
+        // Scale cost linearly
+        float scale = (max_distance_ - signed_dist) / (max_distance_ - cost_scaling_distance_);
+        cost = static_cast<unsigned char>(MAX_NON_OBSTACLE * scale);
       }
+
+      master_array[src_y * size_x + src_x] = std::max(old_cost, cost);
     }
   }
 
