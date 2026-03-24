@@ -72,6 +72,7 @@ target_link_libraries(nav2_costmap_2d_core PUBLIC
 )
 
 add_library(layers SHARED
+  plugins/distance_layer.cpp
   plugins/inflation_layer.cpp
   plugins/legacy_inflation_layer.cpp
   plugins/static_layer.cpp
