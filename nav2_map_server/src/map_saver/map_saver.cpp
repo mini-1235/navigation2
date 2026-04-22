@@ -198,12 +198,12 @@ bool MapSaver::saveMapTopicToFile(
     auto map_sub = create_subscription<nav_msgs::msg::OccupancyGrid>(
       map_topic_loc, mapCallback, map_qos, callback_group);
 
-    // Create SingleThreadedExecutor to spin map_sub in callback_group
-    rclcpp::executors::SingleThreadedExecutor executor;
-    executor.add_callback_group(callback_group, get_node_base_interface());
+    // Create EventsCBGExecutor to spin map_sub in callback_group
+    auto executor = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+    executor->add_callback_group(callback_group, get_node_base_interface());
     // Spin until map message received
     auto timeout = save_map_timeout_->to_chrono<std::chrono::nanoseconds>();
-    auto status = executor.spin_until_future_complete(future_result, timeout);
+    auto status = executor->spin_until_future_complete(future_result, timeout);
     if (status != rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_ERROR(get_logger(), "Failed to spin map subscription");
       return false;

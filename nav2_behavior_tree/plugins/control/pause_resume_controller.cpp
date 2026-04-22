@@ -39,7 +39,7 @@ PauseResumeController::PauseResumeController(
     rclcpp::CallbackGroupType::MutuallyExclusive, false);
 
   executor_ =
-    std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
 
   executor_->add_callback_group(cb_group_, node->get_node_base_interface());
 

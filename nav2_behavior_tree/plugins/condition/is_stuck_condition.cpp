@@ -35,8 +35,9 @@ IsStuckCondition::IsStuckCondition(
   callback_group_ = node_->create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive,
     false);
-  callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
-  callback_group_executor_thread = std::thread([this]() {callback_group_executor_.spin();});
+  callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+  callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
+  callback_group_executor_thread = std::thread([this]() {callback_group_executor_->spin();});
 
   odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
     "odom",
@@ -52,7 +53,7 @@ IsStuckCondition::IsStuckCondition(
 IsStuckCondition::~IsStuckCondition()
 {
   RCLCPP_DEBUG(node_->get_logger(), "Shutting down IsStuckCondition BT node");
-  callback_group_executor_.cancel();
+  callback_group_executor_->cancel();
   callback_group_executor_thread.join();
 }
 

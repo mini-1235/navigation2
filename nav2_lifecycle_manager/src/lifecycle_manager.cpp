@@ -89,7 +89,7 @@ LifecycleManager::LifecycleManager(const rclcpp::NodeOptions & options)
           },
           callback_group_);
       }
-      auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+      auto executor = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
       executor->add_callback_group(callback_group_, get_node_base_interface());
       service_thread_ = std::make_unique<nav2::NodeThread>(executor);
     });

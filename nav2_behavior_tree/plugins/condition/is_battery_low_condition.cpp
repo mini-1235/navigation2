@@ -29,6 +29,7 @@ IsBatteryLowCondition::IsBatteryLowCondition(
   is_voltage_(false),
   is_battery_low_(false)
 {
+  callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
   initialize();
   bt_loop_duration_ =
     config().blackboard->template get<std::chrono::milliseconds>("bt_loop_duration");
@@ -54,7 +55,7 @@ void IsBatteryLowCondition::createROSInterfaces()
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
-    callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
+    callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
 
     battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
       battery_topic_,
@@ -70,7 +71,7 @@ BT::NodeStatus IsBatteryLowCondition::tick()
     initialize();
   }
 
-  callback_group_executor_.spin_all(bt_loop_duration_);
+  callback_group_executor_->spin_all(bt_loop_duration_);
   if (is_battery_low_) {
     return BT::NodeStatus::SUCCESS;
   }

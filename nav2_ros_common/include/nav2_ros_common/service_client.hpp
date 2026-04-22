@@ -55,7 +55,7 @@ public:
       callback_group_ = provided_node->create_callback_group(
         rclcpp::CallbackGroupType::MutuallyExclusive,
         false);
-      callback_group_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+      callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
       callback_group_executor_->add_callback_group(
         callback_group_,
         provided_node->get_node_base_interface());
@@ -236,7 +236,7 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("nav2_ros_common")};
   rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_base_interface_;
   rclcpp::CallbackGroup::SharedPtr callback_group_{nullptr};
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
   typename rclcpp::Client<ServiceT>::SharedPtr client_;
   bool use_internal_executor_;
 };

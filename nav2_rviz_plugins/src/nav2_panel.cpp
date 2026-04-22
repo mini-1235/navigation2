@@ -480,7 +480,7 @@ Nav2Panel::Nav2Panel(QWidget * parent)
   auto options = rclcpp::NodeOptions().arguments(
     {"--ros-args", "--remap", "__node:=rviz_navigation_dialog_action_client", "--"});
   client_node_ = std::make_shared<rclcpp::Node>("_", options);
-  executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
   executor_->add_node(client_node_);
 
   client_nav_ = std::make_shared<nav2_lifecycle_manager::LifecycleManagerClient>(
@@ -1301,13 +1301,12 @@ Nav2Panel::timerEvent(QTimerEvent * event)
     }
   } else {
     if (event->timerId() == timer_.timerId()) {
+      executor_->spin_some();
       if (!navigation_goal_handle_) {
         RCLCPP_DEBUG(client_node_->get_logger(), "Waiting for Goal");
         state_machine_.postEvent(new ROSActionQEvent(QActionState::INACTIVE));
         return;
       }
-
-      executor_->spin_some();
       auto status = navigation_goal_handle_->get_status();
 
       // Check if the goal is still executing

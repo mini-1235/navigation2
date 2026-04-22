@@ -103,7 +103,7 @@ protected:
   std::shared_ptr<PlannerServerWrapper> planner_;
   std::shared_ptr<nav2::LifecycleNode> tester_node_;
 
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::shared_ptr<nav2::NodeThread> executor_thread_;
 
   nav_msgs::msg::OccupancyGrid map_;
@@ -122,7 +122,7 @@ Tester::Tester()
   planner_ = std::make_shared<PlannerServerWrapper>();
   tester_node_ = std::make_shared<nav2::LifecycleNode>("tester_node");
 
-  executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
   executor_->add_node(planner_->get_node_base_interface());
   executor_->add_node(tester_node_->get_node_base_interface());
   executor_thread_ = std::make_unique<nav2::NodeThread>(executor_);

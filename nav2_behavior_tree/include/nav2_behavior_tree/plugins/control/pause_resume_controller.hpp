@@ -23,7 +23,7 @@
 // ROS includes
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/callback_group.hpp"
-#include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/executors/events_cbg_executor/events_cbg_executor.hpp"
 #include "behaviortree_cpp/control_node.h"
 #include "nav2_ros_common/service_server.hpp"
 #include "nav2_ros_common/lifecycle_node.hpp"
@@ -142,7 +142,7 @@ private:
 
   rclcpp::Logger logger_{rclcpp::get_logger("PauseResumeController")};
   rclcpp::CallbackGroup::SharedPtr cb_group_;
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   nav2::ServiceServer<Trigger>::SharedPtr pause_srv_;
   nav2::ServiceServer<Trigger>::SharedPtr resume_srv_;
   state_t state_;

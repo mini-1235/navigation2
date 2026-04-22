@@ -33,10 +33,7 @@
 #include "tf2_ros/transform_listener.hpp"
 #include "tf2_ros/create_timer_ros.hpp"
 #include "tf2_ros/transform_broadcaster.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 #include "nav2_util/geometry_utils.hpp"
 
 using namespace std::chrono_literals;
@@ -143,7 +140,7 @@ public:
     std::shared_ptr<nav2_costmap_2d::InflationLayer> ilayer = nullptr;
     addInflationLayer(*layers_, *tf_buffer_, shared_from_this(), ilayer, callback_group_);
 
-    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
     executor_->add_callback_group(callback_group_, get_node_base_interface());
     executor_thread_ = std::make_unique<nav2::NodeThread>(executor_);
     return nav2::CallbackReturn::SUCCESS;
@@ -287,7 +284,7 @@ protected:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::unique_ptr<nav2::NodeThread> executor_thread_;
 
   std::shared_ptr<DummyCostmapSubscriber> costmap_sub_;

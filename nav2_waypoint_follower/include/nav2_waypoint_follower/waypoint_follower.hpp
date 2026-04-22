@@ -192,7 +192,7 @@ protected:
   typename ActionServer::SharedPtr xyz_action_server_;
   ActionClient::SharedPtr nav_to_pose_client_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
   std::shared_future<rclcpp_action::ClientGoalHandle<ClientT>::SharedPtr> future_goal_handle_;
 
   // Our action server for GPS waypoint following

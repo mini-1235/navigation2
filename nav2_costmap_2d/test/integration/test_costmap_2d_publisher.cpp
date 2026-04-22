@@ -90,7 +90,7 @@ public:
       nav2::qos::LatchedSubscriptionQoS(3),
       callback_group_);
 
-    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
     executor_->add_callback_group(callback_group_, node->get_node_base_interface());
     executor_thread_ = std::make_unique<nav2::NodeThread>(executor_);
   }
@@ -113,7 +113,7 @@ protected:
 
   nav2::Subscription<nav2_msgs::msg::Costmap>::SharedPtr layer_sub_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::unique_ptr<nav2::NodeThread> executor_thread_;
   bool callback_hit_{false};
 };

@@ -53,7 +53,8 @@ WaypointFollower::on_configure(const rclcpp_lifecycle::State & state)
   callback_group_ = create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive,
     false);
-  callback_group_executor_.add_callback_group(callback_group_, get_node_base_interface());
+  callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+  callback_group_executor_->add_callback_group(callback_group_, get_node_base_interface());
 
   nav_to_pose_client_ = create_action_client<ClientT>(
     "navigate_to_pose", callback_group_);
@@ -208,9 +209,9 @@ void WaypointFollower::followWaypointsHandler(
     // Check if asked to stop processing action
     if (action_server->is_cancel_requested()) {
       auto cancel_future = nav_to_pose_client_->async_cancel_all_goals();
-      callback_group_executor_.spin_until_future_complete(cancel_future);
+      callback_group_executor_->spin_until_future_complete(cancel_future);
       // for result callback processing
-      callback_group_executor_.spin_some();
+      callback_group_executor_->spin_some();
       action_server->terminate_all();
       return;
     }
@@ -347,7 +348,7 @@ void WaypointFollower::followWaypointsHandler(
       }
     }
 
-    callback_group_executor_.spin_some();
+    callback_group_executor_->spin_some();
     r.sleep();
   }
 }

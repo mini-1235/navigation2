@@ -81,7 +81,7 @@ public:
 protected:
   nav2::LifecycleNode::WeakPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   ActionClient::SharedPtr nav_to_pose_client_;
   std::string navigator_bt_xml_;
 };

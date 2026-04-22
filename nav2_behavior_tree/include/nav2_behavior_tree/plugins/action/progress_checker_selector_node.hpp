@@ -99,7 +99,7 @@ private:
 
   nav2::LifecycleNode::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
 
   std::string topic_name_;
   std::chrono::milliseconds bt_loop_duration_;

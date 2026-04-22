@@ -35,6 +35,7 @@ GoalUpdater::GoalUpdater(
   goal_updater_topic_("goal_update"),
   goals_updater_topic_("goals_update")
 {
+  callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
   initialize();
   bt_loop_duration_ =
     config().blackboard->template get<std::chrono::milliseconds>("bt_loop_duration");
@@ -51,7 +52,7 @@ void GoalUpdater::createROSInterfaces()
   callback_group_ = node_->create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive,
     false);
-  callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
+  callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
 
   std::string goal_updater_topic_new;
   std::string goals_updater_topic_new;
@@ -91,7 +92,7 @@ inline BT::NodeStatus GoalUpdater::tick()
   getInput("input_goal", goal);
   getInput("input_goals", goals);
 
-  callback_group_executor_.spin_all(bt_loop_duration_);
+  callback_group_executor_->spin_all(bt_loop_duration_);
 
   if (last_goal_received_set_) {
     if (last_goal_received_.header.stamp == rclcpp::Time(0)) {

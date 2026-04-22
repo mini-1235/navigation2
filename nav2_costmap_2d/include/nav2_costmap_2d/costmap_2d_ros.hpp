@@ -61,11 +61,7 @@
 #include "tf2/time.hpp"
 #include "tf2/transform_datatypes.hpp"
 #include "nav2_ros_common/service_server.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 
 namespace nav2_costmap_2d
 {
@@ -363,7 +359,7 @@ protected:
 
   // Dedicated callback group and executor for tf timer_interface and message filter
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::unique_ptr<nav2::NodeThread> executor_thread_;
 
   // Transform listener

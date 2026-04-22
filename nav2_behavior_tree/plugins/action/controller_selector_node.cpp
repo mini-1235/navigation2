@@ -32,6 +32,7 @@ ControllerSelector::ControllerSelector(
   const BT::NodeConfiguration & conf)
 : BT::SyncActionNode(name, conf)
 {
+  callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
   initialize();
   bt_loop_duration_ =
     config().blackboard->template get<std::chrono::milliseconds>("bt_loop_duration");
@@ -52,7 +53,7 @@ void ControllerSelector::createROSInterfaces()
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
-    callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
+    callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
 
     controller_selector_sub_ = node_->create_subscription<std_msgs::msg::String>(
       topic_name_,
@@ -68,7 +69,7 @@ BT::NodeStatus ControllerSelector::tick()
     initialize();
   }
 
-  callback_group_executor_.spin_all(bt_loop_duration_);
+  callback_group_executor_->spin_all(bt_loop_duration_);
 
   // This behavior always use the last selected controller received from the topic input.
   // When no input is specified it uses the default controller.

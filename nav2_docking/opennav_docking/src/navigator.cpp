@@ -34,7 +34,8 @@ void Navigator::activate()
   callback_group_ = node->create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive,
     false);
-  executor_.add_callback_group(callback_group_, node->get_node_base_interface());
+  executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+  executor_->add_callback_group(callback_group_, node->get_node_base_interface());
   nav_to_pose_client_ = node->create_action_client<Nav2Pose>(
     "navigate_to_pose", callback_group_);
 }
@@ -60,7 +61,7 @@ void Navigator::goToPose(
   // Wait for server to be active
   nav_to_pose_client_->wait_for_action_server(1s);
   auto future_goal_handle = nav_to_pose_client_->async_send_goal(goal);
-  if (executor_.spin_until_future_complete(
+  if (executor_->spin_until_future_complete(
       future_goal_handle, 2s) == rclcpp::FutureReturnCode::SUCCESS)
   {
     auto future_result = nav_to_pose_client_->async_get_result(future_goal_handle.get());
@@ -68,17 +69,17 @@ void Navigator::goToPose(
     while (rclcpp::ok()) {
       if (isPreempted()) {
         auto cancel_future = nav_to_pose_client_->async_cancel_goal(future_goal_handle.get());
-        executor_.spin_until_future_complete(cancel_future, 1s);
+        executor_->spin_until_future_complete(cancel_future, 1s);
         throw opennav_docking_core::FailedToStage("Navigation request to staging pose preempted.");
       }
 
       if (node->now() - start_time > remaining_staging_duration) {
         auto cancel_future = nav_to_pose_client_->async_cancel_goal(future_goal_handle.get());
-        executor_.spin_until_future_complete(cancel_future, 1s);
+        executor_->spin_until_future_complete(cancel_future, 1s);
         throw opennav_docking_core::FailedToStage("Navigation request to staging pose timed out.");
       }
 
-      if (executor_.spin_until_future_complete(
+      if (executor_->spin_until_future_complete(
           future_result, 10ms) == rclcpp::FutureReturnCode::SUCCESS)
       {
         auto result = future_result.get();

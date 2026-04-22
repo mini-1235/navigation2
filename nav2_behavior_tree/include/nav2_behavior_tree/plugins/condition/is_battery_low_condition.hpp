@@ -87,7 +87,7 @@ private:
 
   nav2::LifecycleNode::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
   nav2::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
   std::string battery_topic_;
   double min_battery_;

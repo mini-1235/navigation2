@@ -53,7 +53,8 @@ public:
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
-    callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
+    callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+    callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
 
     // Get the required items from the blackboard
     getInputOrBlackboard("server_timeout", server_timeout_);
@@ -145,7 +146,7 @@ public:
 
     auto future_cancel = action_client_->async_cancel_goals_before(goal_expiry_time);
 
-    if (callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_) !=
+    if (callback_group_executor_->spin_until_future_complete(future_cancel, server_timeout_) !=
       rclcpp::FutureReturnCode::SUCCESS)
     {
       RCLCPP_ERROR(
@@ -163,7 +164,7 @@ protected:
   // The node that will be used for any ROS operations
   nav2::LifecycleNode::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
 
   // The timeout value while waiting for response from a server when a
   // new action goal is canceled

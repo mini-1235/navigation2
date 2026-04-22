@@ -123,7 +123,7 @@ protected:
   // Dedicated callback group and executor for services and subscriptions in AmclNode,
   // in order to isolate TF timer used in message filter.
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::unique_ptr<nav2::NodeThread> executor_thread_;
 
   // Pose hypothesis

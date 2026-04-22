@@ -36,7 +36,7 @@ public:
     rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_base)
   : node_(node_base)
   {
-    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
     thread_ = std::make_unique<std::thread>(
       [&]()
       {
@@ -51,7 +51,7 @@ public:
    * @param executor Interface to executor to spin in thread
    */
   explicit NodeThread(
-    rclcpp::executors::SingleThreadedExecutor::SharedPtr executor)
+    rclcpp::executors::EventsCBGExecutor::SharedPtr executor)
   : executor_(executor)
   {
     thread_ = std::make_unique<std::thread>(

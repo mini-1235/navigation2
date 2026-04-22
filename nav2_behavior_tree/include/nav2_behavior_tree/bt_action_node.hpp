@@ -56,7 +56,8 @@ public:
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
-    callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
+    callback_group_executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
+    callback_group_executor_->add_callback_group(callback_group_, node_->get_node_base_interface());
 
     // Get the required items from the blackboard
     auto bt_loop_duration =
@@ -276,7 +277,7 @@ public:
           }
         }
 
-        callback_group_executor_.spin_some();
+        callback_group_executor_->spin_some();
 
         // check if, after invoking spin_some(), we finally received the result
         if (!goal_result_available_) {
@@ -327,7 +328,7 @@ public:
     if (should_cancel_goal()) {
       auto future_result = action_client_->async_get_result(goal_handle_);
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-      if (callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_) !=
+      if (callback_group_executor_->spin_until_future_complete(future_cancel, server_timeout_) !=
         rclcpp::FutureReturnCode::SUCCESS)
       {
         RCLCPP_ERROR(
@@ -335,7 +336,7 @@ public:
           "Failed to cancel action server for %s", action_name_.c_str());
       }
 
-      if (callback_group_executor_.spin_until_future_complete(future_result, cancel_timeout_) !=
+      if (callback_group_executor_->spin_until_future_complete(future_result, cancel_timeout_) !=
         rclcpp::FutureReturnCode::SUCCESS)
       {
         RCLCPP_ERROR(
@@ -368,7 +369,7 @@ protected:
       return false;
     }
 
-    callback_group_executor_.spin_some();
+    callback_group_executor_->spin_some();
     auto status = goal_handle_->get_status();
 
     // Check if the goal is still executing
@@ -433,7 +434,7 @@ protected:
 
     auto timeout = remaining > max_timeout_ ? max_timeout_ : remaining;
     auto result =
-      callback_group_executor_.spin_until_future_complete(*future_goal_handle_, timeout);
+      callback_group_executor_->spin_until_future_complete(*future_goal_handle_, timeout);
     elapsed += timeout;
 
     if (result == rclcpp::FutureReturnCode::INTERRUPTED) {
@@ -480,7 +481,7 @@ protected:
   // The node that will be used for any ROS operations
   nav2::LifecycleNode::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
-  rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr callback_group_executor_;
 
   // The timeout value while waiting for response from a server when a
   // new action goal is sent or canceled

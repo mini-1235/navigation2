@@ -139,7 +139,7 @@ public:
       node_parameters_interface_, node_clock_interface_->get_clock());
 
     if (spin_thread_) {
-      executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+      executor_ = std::make_shared<rclcpp::executors::EventsCBGExecutor>(rclcpp::ExecutorOptions(), 1);
       executor_->add_callback_group(callback_group_, node_base_interface_);
       executor_thread_ = std::make_unique<nav2::NodeThread>(executor_);
     }
@@ -559,7 +559,7 @@ protected:
   typename rclcpp_action::Server<ActionT>::SharedPtr action_server_;
   bool spin_thread_;
   rclcpp::CallbackGroup::SharedPtr callback_group_{nullptr};
-  rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
+  rclcpp::executors::EventsCBGExecutor::SharedPtr executor_;
   std::unique_ptr<nav2::NodeThread> executor_thread_;
 
   /**
