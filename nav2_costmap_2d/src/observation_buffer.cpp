@@ -130,9 +130,9 @@ void ObservationBuffer::bufferCloud(const sensor_msgs::msg::PointCloud2 & cloud)
 
     // copy over the points that are within our height bounds
     sensor_msgs::PointCloud2Iterator<float> iter_z(global_frame_cloud, "z");
-    std::vector<unsigned char>::const_iterator iter_global = global_frame_cloud.data.begin(),
-      iter_global_end = global_frame_cloud.data.end();
-    std::vector<unsigned char>::iterator iter_obs = observation_cloud.data.begin();
+    auto iter_global = global_frame_cloud.data.begin();
+    auto iter_global_end = global_frame_cloud.data.end();
+    auto iter_obs = observation_cloud.data.begin();
     for (; iter_global != iter_global_end; ++iter_z, iter_global +=
       global_frame_cloud.point_step)
     {
