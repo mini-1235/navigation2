@@ -61,11 +61,7 @@
 #include "tf2/time.hpp"
 #include "tf2/transform_datatypes.hpp"
 #include "nav2_ros_common/service_server.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 
 namespace nav2_costmap_2d
 {

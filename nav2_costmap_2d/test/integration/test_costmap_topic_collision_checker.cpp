@@ -33,10 +33,7 @@
 #include "tf2_ros/transform_listener.hpp"
 #include "tf2_ros/create_timer_ros.hpp"
 #include "tf2_ros/transform_broadcaster.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 #include "nav2_util/geometry_utils.hpp"
 
 using namespace std::chrono_literals;
