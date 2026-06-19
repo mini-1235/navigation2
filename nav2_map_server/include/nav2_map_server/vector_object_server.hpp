@@ -19,7 +19,8 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/node_options.hpp"
+#include "rclcpp/timer.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 
 #include "tf2_ros/buffer.hpp"

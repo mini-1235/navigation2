@@ -20,7 +20,7 @@
 #include <string>
 #include <exception>
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/logger.hpp"
 
 #include "sensor_msgs/msg/image.hpp"
 #include "nav2_core/waypoint_task_executor.hpp"

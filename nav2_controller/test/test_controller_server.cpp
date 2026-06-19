@@ -21,7 +21,11 @@
 #include "gtest/gtest.h"
 #include "nav2_ros_common/lifecycle_node.hpp"
 #include "nav2_controller/controller_server.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/executors.hpp"
+#include "rclcpp/parameter.hpp"
+#include "rclcpp/parameter_client.hpp"
+#include "rclcpp/parameter_value.hpp"
+#include "rclcpp/utilities.hpp"
 
 TEST(ControllerServerTest, GoalCheckerPluginTypeException)
 {

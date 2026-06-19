@@ -28,7 +28,7 @@
 #include "tf2/transform_datatypes.hpp"
 #include "tf2_ros/buffer.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/time.hpp"
 
 namespace nav2_util
 {

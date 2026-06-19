@@ -18,7 +18,9 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/parameter.hpp"
+#include "rclcpp/parameter_value.hpp"
+#include "rclcpp/utilities.hpp"
 #include "tf2_ros/transform_broadcaster.hpp"
 #include "tf2_ros/create_timer_ros.hpp"
 #include "tf2_ros/transform_listener.hpp"

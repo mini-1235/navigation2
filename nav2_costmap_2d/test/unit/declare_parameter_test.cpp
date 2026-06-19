@@ -17,7 +17,9 @@
 #include <string>
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/exceptions.hpp"
+#include "rclcpp/parameter_value.hpp"
+#include "rclcpp/utilities.hpp"
 #include "nav2_costmap_2d/layer.hpp"
 
 class LayerWrapper : public nav2_costmap_2d::Layer

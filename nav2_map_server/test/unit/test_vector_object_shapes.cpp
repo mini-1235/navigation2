@@ -21,7 +21,9 @@
 #include <memory>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/parameter.hpp"
+#include "rclcpp/parameter_value.hpp"
+#include "rclcpp/utilities.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 

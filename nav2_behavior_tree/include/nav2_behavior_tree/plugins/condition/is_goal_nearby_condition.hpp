@@ -25,7 +25,6 @@
 #include "nav2_behavior_tree/bt_utils.hpp"
 #include "nav2_ros_common/lifecycle_node.hpp"
 #include "nav_msgs/msg/path.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/buffer.hpp"
 
 namespace nav2_behavior_tree
