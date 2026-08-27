@@ -35,10 +35,7 @@
 #include "nav2_ros_common/node_utils.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_ros_common/tf2_factories.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 #include "nav2_util/geometry_utils.hpp"
 
 using namespace std::chrono_literals;

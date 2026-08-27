@@ -23,7 +23,7 @@ find_package(yaml_cpp_vendor REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-pkg_search_module(UUID REQUIRED uuid)
+pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 
 nav2_package()
 
@@ -96,8 +96,7 @@ add_library(${vo_library_name} SHARED
 target_include_directories(${vo_library_name}
   PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-  "$<BUILD_INTERFACE:${nav2_ros_common_INCLUDE_DIRS}>")
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(${vo_library_name} PUBLIC
   geometry_msgs::geometry_msgs
   nav_msgs::nav_msgs
@@ -107,12 +106,7 @@ target_link_libraries(${vo_library_name} PUBLIC
   rclcpp_lifecycle::rclcpp_lifecycle
   rclcpp_components::component
   tf2_ros::tf2_ros
-  ${UUID_LIBRARIES}
-)
-target_link_libraries(${library_name} PRIVATE
-  lifecycle_msgs::lifecycle_msgs
-  rclcpp_components::component
-  yaml-cpp::yaml-cpp
+  PkgConfig::UUID
 )
 
 add_executable(${map_server_executable}

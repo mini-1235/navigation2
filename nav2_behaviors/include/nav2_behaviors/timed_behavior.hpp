@@ -37,10 +37,7 @@
 #include "nav2_ros_common/simple_action_server.hpp"
 #include "nav2_ros_common/rate.hpp"
 #include "nav2_core/behavior.hpp"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 #include "tf2/utils.hpp"
-#pragma GCC diagnostic pop
 
 
 namespace nav2_behaviors
