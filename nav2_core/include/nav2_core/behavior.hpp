@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "nav2_ros_common/lifecycle_node.hpp"
-#include "tf2_ros/buffer.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 #include "nav2_costmap_2d/costmap_topic_collision_checker.hpp"
 
 namespace nav2_core
@@ -55,7 +55,7 @@ public:
    */
   virtual void configure(
     const nav2::LifecycleNode::WeakPtr & parent,
-    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf,
+    const std::string & name, nav2::TransformBuffer::SharedPtr tf,
     std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> local_collision_checker,
     std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> global_collision_checker) = 0;
 

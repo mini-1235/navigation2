@@ -27,6 +27,7 @@
 #include "nav2_graceful_controller/smooth_control_law.hpp"
 #include "nav2_graceful_controller/graceful_controller.hpp"
 #include "nav2_util/path_utils.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 
 class SCLFixture : public nav2_graceful_controller::SmoothControlLaw
 {
@@ -215,7 +216,7 @@ TEST(SmoothControlLawTest, calculateNextPose) {
 
 TEST(GracefulControllerTest, dynamicParameters) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("global_costmap");
 
   // Set initial rotation and allow backward to true so it warns and allow backward is false
@@ -337,7 +338,7 @@ TEST(GracefulControllerTest, dynamicParameters) {
 
 TEST(GracefulControllerTest, createSlowdownMsg) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("global_costmap");
 
   // Create controller
@@ -389,7 +390,7 @@ TEST(GracefulControllerTest, createSlowdownMsg) {
 
 TEST(GracefulControllerTest, rotateToTarget) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("global_costmap");
 
   // Create controller
@@ -440,7 +441,7 @@ TEST(GracefulControllerTest, rotateToTarget) {
 
 TEST(GracefulControllerTest, setSpeedLimit) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("global_costmap");
 
   // Create controller
@@ -484,7 +485,7 @@ TEST(GracefulControllerTest, setSpeedLimit) {
 
 TEST(GracefulControllerTest, computeVelocityCommandRotate) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
 
   nav2::declare_parameter_if_not_declared(
     node, "test.v_angular_max", rclcpp::ParameterValue(1.0));
@@ -571,7 +572,7 @@ TEST(GracefulControllerTest, computeVelocityCommandRotate) {
 
 TEST(GracefulControllerTest, computeVelocityCommandRegular) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
 
   // Create a costmap of 10x10 meters
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("test_costmap");
@@ -649,7 +650,7 @@ TEST(GracefulControllerTest, computeVelocityCommandRegular) {
 
 TEST(GracefulControllerTest, computeVelocityCommandRegularBackwards) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
   tf->setUsingDedicatedThread(true);
 
   // Set initial rotation false and allow backward to true
@@ -736,7 +737,7 @@ TEST(GracefulControllerTest, computeVelocityCommandRegularBackwards) {
 
 TEST(GracefulControllerTest, computeVelocityCommandFinal) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
 
   // Create a costmap of 10x10 meters
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("test_costmap");
@@ -824,7 +825,7 @@ TEST(GracefulControllerTest, computeVelocityCommandFinal) {
 
 TEST(GracefulControllerTest, slowDownForObstacle) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
 
   // Create a costmap of 10x10 meters
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("test_costmap");
@@ -931,7 +932,7 @@ TEST(GracefulControllerTest, slowDownForObstacle) {
 
 TEST(GracefulControllerTest, computeVelocityCommandObstacleMargin) {
   auto node = std::make_shared<nav2::LifecycleNode>("testGraceful");
-  auto tf = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  auto tf = nav2::create_transform_buffer(node);
 
   // Create a costmap of 10x10 meters
   auto costmap_ros = std::make_shared<nav2_costmap_2d::Costmap2DROS>("test_costmap");

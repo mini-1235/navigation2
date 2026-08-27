@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20)
 project(nav2_navfn_planner)
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav2_common REQUIRED)
 find_package(nav2_core REQUIRED)
@@ -30,18 +31,19 @@ target_include_directories(${library_name}
     "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${library_name} PUBLIC
-  ${geometry_msgs_TARGETS}
+  geometry_msgs::geometry_msgs
   nav2_core::nav2_core
   nav2_ros_common::nav2_ros_common
   nav2_costmap_2d::nav2_costmap_2d_core
   nav2_util::nav2_util_core
-  ${nav_msgs_TARGETS}
+  nav_msgs::nav_msgs
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
-  ${rcl_interfaces_TARGETS}
+  rcl_interfaces::rcl_interfaces
   tf2_ros::tf2_ros
 )
 target_link_libraries(${library_name} PRIVATE
+  builtin_interfaces::builtin_interfaces
   pluginlib::pluginlib
 )
 

@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <cstdint>
 
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/json_export.h"
@@ -40,6 +41,8 @@ template<class ActionT>
 class BtActionNode : public BT::ActionNodeBase
 {
 public:
+  using ActionResult = typename ActionT::Result;
+
   /**
    * @brief A nav2_behavior_tree::BtActionNode constructor
    * @param xml_tag_name Name for the XML tag for this node
@@ -72,6 +75,28 @@ public:
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
     result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
+
+    if constexpr (
+      !requires {ActionT::Result::TIMEOUT;} ||
+      !requires {ActionT::Result::GOAL_REJECTED;} ||
+      !requires {ActionT::Result::SEND_GOAL_FAILURE;})
+    {
+      if constexpr (requires {ActionT::Result::UNKNOWN;}) {
+        RCLCPP_WARN(
+          node_->get_logger(),
+          "Action type for \"%s\" does not define one or more of the TIMEOUT, "
+          "GOAL_REJECTED, and SEND_GOAL_FAILURE error codes. UNKNOWN will be "
+          "used for unavailable errors.",
+          xml_tag_name.c_str());
+      } else {
+        RCLCPP_WARN(
+          node_->get_logger(),
+          "Action type for \"%s\" does not define one or more of the TIMEOUT, "
+          "GOAL_REJECTED, and SEND_GOAL_FAILURE error codes. The error_code_id "
+          "output will not be set for unavailable errors.",
+          xml_tag_name.c_str());
+      }
+    }
 
     std::string remapped_action_name;
     if (getInput("server_name", remapped_action_name)) {
@@ -121,7 +146,9 @@ public:
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("server_name", "Action server name"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout")
+      BT::InputPort<std::chrono::milliseconds>("server_timeout"),
+      BT::OutputPort<uint16_t>("error_code_id", "The action error code"),
+      BT::OutputPort<std::string>("error_msg", "The action error message")
     };
     basic.insert(addition.begin(), addition.end());
 
@@ -193,7 +220,40 @@ public:
    */
   virtual void on_timeout()
   {
-    return;
+    if constexpr (requires {ActionT::Result::TIMEOUT;}) {
+      setOutput("error_code_id", ActionResult::TIMEOUT);
+    } else if constexpr (requires {ActionT::Result::UNKNOWN;}) {
+      setOutput("error_code_id", ActionResult::UNKNOWN);
+    }
+    setOutput("error_msg", "Behavior Tree action client timed out waiting.");
+  }
+
+  /**
+   * @brief Function to perform work in a BT Node when the action server rejects a goal
+   * Such as setting the error code ID status for action clients.
+   */
+  virtual void on_goal_rejected()
+  {
+    if constexpr (requires {ActionT::Result::GOAL_REJECTED;}) {
+      setOutput("error_code_id", ActionResult::GOAL_REJECTED);
+    } else if constexpr (requires {ActionT::Result::UNKNOWN;}) {
+      setOutput("error_code_id", ActionResult::UNKNOWN);
+    }
+    setOutput("error_msg", "Goal was rejected by the action server.");
+  }
+
+  /**
+   * @brief Function to perform work when sending a goal to the action server fails
+   * Such as setting the error code ID status for action clients.
+   */
+  virtual void on_send_goal_failure()
+  {
+    if constexpr (requires {ActionT::Result::SEND_GOAL_FAILURE;}) {
+      setOutput("error_code_id", ActionResult::SEND_GOAL_FAILURE);
+    } else if constexpr (requires {ActionT::Result::UNKNOWN;}) {
+      setOutput("error_code_id", ActionResult::UNKNOWN);
+    }
+    setOutput("error_msg", "Failed to send goal to the action server.");
   }
 
   /**
@@ -234,13 +294,7 @@ public:
           if (elapsed < server_timeout_) {
             return BT::NodeStatus::RUNNING;
           }
-          // if server has taken more time than the specified timeout value return FAILURE
-          RCLCPP_WARN(
-            node_->get_logger(),
-            "Timed out while waiting for action server to acknowledge goal request for %s",
-            action_name_.c_str());
-          future_goal_handle_.reset();
-          on_timeout();
+          handle_goal_response_timeout();
           return BT::NodeStatus::FAILURE;
         }
       }
@@ -266,12 +320,7 @@ public:
             if (elapsed < server_timeout_) {
               return BT::NodeStatus::RUNNING;
             }
-            RCLCPP_WARN(
-              node_->get_logger(),
-              "Timed out while waiting for action server to acknowledge goal request for %s",
-              action_name_.c_str());
-            future_goal_handle_.reset();
-            on_timeout();
+            handle_goal_response_timeout();
             return BT::NodeStatus::FAILURE;
           }
         }
@@ -285,9 +334,11 @@ public:
         }
       }
     } catch (const std::runtime_error & e) {
-      if (e.what() == std::string("send_goal failed") ||
-        e.what() == std::string("Goal was rejected by the action server"))
-      {
+      if (e.what() == std::string("Goal was rejected by the action server")) {
+        on_goal_rejected();
+        return BT::NodeStatus::FAILURE;
+      } else if (e.what() == std::string("send_goal failed")) {
+        on_send_goal_failure();
         // Action related failure that should not fail the tree, but the node
         return BT::NodeStatus::FAILURE;
       } else {
@@ -352,6 +403,29 @@ public:
   }
 
 protected:
+  /**
+   * @brief Handle a timeout while waiting for a goal response
+   */
+  void handle_goal_response_timeout()
+  {
+    RCLCPP_WARN(
+      node_->get_logger(),
+      "Timed out waiting for action server to acknowledge goal request for %s, "
+      "canceling all goals",
+      action_name_.c_str());
+    auto future_cancel = action_client_->async_cancel_all_goals();
+    if (callback_group_executor_.spin_until_future_complete(
+        future_cancel, cancel_timeout_) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_WARN(
+        node_->get_logger(),
+        "Timed out while waiting for action server to cancel all goals for %s",
+        action_name_.c_str());
+    }
+    future_goal_handle_.reset();
+    on_timeout();
+  }
+
   /**
    * @brief Function to check if current goal should be cancelled
    * @return bool True if current goal should be cancelled, false otherwise
@@ -427,7 +501,6 @@ protected:
 
     // server has already timed out, no need to sleep
     if (remaining <= std::chrono::milliseconds(0)) {
-      future_goal_handle_.reset();
       return false;
     }
 
@@ -486,7 +559,7 @@ protected:
   // new action goal is sent or canceled
   std::chrono::milliseconds server_timeout_;
 
-  // The timeout value when cancelling actions during halt
+  // The timeout value when cancelling actions
   std::chrono::milliseconds cancel_timeout_;
 
   // The timeout value for BT loop execution

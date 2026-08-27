@@ -1,15 +1,21 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20)
 project(nav2_waypoint_follower)
+
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(geographic_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(image_transport REQUIRED)
 find_package(nav2_common REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -19,6 +25,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(robot_localization REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(nav2_ros_common REQUIRED)
 
 nav2_package()
@@ -36,15 +43,17 @@ target_include_directories(${library_name} PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${library_name} PUBLIC
-  ${geographic_msgs_TARGETS}
+  geographic_msgs::geographic_msgs
   nav2_core::nav2_core
   nav2_ros_common::nav2_ros_common
-  ${nav2_msgs_TARGETS}
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
+  nav_msgs::nav_msgs
   pluginlib::pluginlib
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
   rclcpp_lifecycle::rclcpp_lifecycle
+  tf2_ros::tf2_ros
 )
 target_link_libraries(${library_name} PRIVATE
   rclcpp_components::component
@@ -80,7 +89,7 @@ target_include_directories(wait_at_waypoint PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(wait_at_waypoint PUBLIC
-  ${geometry_msgs_TARGETS}
+  geometry_msgs::geometry_msgs
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   nav2_core::nav2_core
@@ -98,13 +107,14 @@ target_include_directories(photo_at_waypoint PUBLIC
 )
 target_link_libraries(photo_at_waypoint PUBLIC
   cv_bridge::cv_bridge
-  ${geometry_msgs_TARGETS}
+  geometry_msgs::geometry_msgs
+  image_transport::image_transport
   nav2_core::nav2_core
   nav2_ros_common::nav2_ros_common
   opencv_core
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
-  ${sensor_msgs_TARGETS}
+  sensor_msgs::sensor_msgs
 )
 target_link_libraries(photo_at_waypoint PRIVATE
   nav2_util::nav2_util_core
@@ -117,12 +127,12 @@ target_include_directories(input_at_waypoint PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(input_at_waypoint PUBLIC
-  ${geometry_msgs_TARGETS}
+  geometry_msgs::geometry_msgs
   nav2_core::nav2_core
   nav2_ros_common::nav2_ros_common
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
-  ${std_msgs_TARGETS}
+  std_msgs::std_msgs
 )
 target_link_libraries(input_at_waypoint PRIVATE
   pluginlib::pluginlib
@@ -161,9 +171,11 @@ ament_export_dependencies(
   cv_bridge
   geographic_msgs
   geometry_msgs
+  image_transport
   nav2_core
   nav2_msgs
   nav2_util
+  nav_msgs
   OpenCV
   pluginlib
   rclcpp
@@ -173,6 +185,7 @@ ament_export_dependencies(
   robot_localization
   sensor_msgs
   std_msgs
+  tf2_ros
 )
 ament_export_targets(${PROJECT_NAME})
 pluginlib_export_plugin_description_file(nav2_core plugins.xml)

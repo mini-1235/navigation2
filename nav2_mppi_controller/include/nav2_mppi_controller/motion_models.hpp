@@ -28,7 +28,8 @@
 #include "nav2_mppi_controller/models/constraints.hpp"
 
 #include "nav2_mppi_controller/tools/parameters_handler.hpp"
-
+#include "nav2_util/geometry_utils.hpp"
+#include "tf2/utils.hpp"
 namespace mppi
 {
 
@@ -66,13 +67,14 @@ public:
     */
   void setConstraints(
     const models::ControlConstraints & control_constraints, float model_dt,
-    float model_delay_vx, float model_delay_vy, float model_delay_wz)
+    float model_delay_vx, float model_delay_vy, float model_delay_wz, bool clamp_raw_controls)
   {
     control_constraints_ = control_constraints;
     model_dt_ = model_dt;
     model_delay_vx_ = model_delay_vx;
     model_delay_vy_ = model_delay_vy;
     model_delay_wz_ = model_delay_wz;
+    clamp_raw_controls_ = clamp_raw_controls;
 
     cmd_history_vx_.resize(offsetSteps(model_delay_vx_), 0.0f);
     cmd_history_vy_.resize(offsetSteps(model_delay_vy_), 0.0f);
@@ -127,10 +129,16 @@ public:
       state.vx.col(i) = state.cvx.col(i - 1)
         .cwiseMax(lower_bound_vx)
         .cwiseMin(upper_bound_vx);
+      if (clamp_raw_controls_) {
+        state.cvx.col(i - 1) = state.vx.col(i);
+      }
 
       state.wz.col(i) = state.cwz.col(i - 1)
         .cwiseMax(state.wz.col(i - 1) - max_delta_wz)
         .cwiseMin(state.wz.col(i - 1) + max_delta_wz);
+      if (clamp_raw_controls_) {
+        state.cwz.col(i - 1) = state.wz.col(i);
+      }
 
       if (is_holo) {
         auto lower_bound_vy = (state.vy.col(i - 1) >
@@ -144,6 +152,9 @@ public:
         state.vy.col(i) = state.cvy.col(i - 1)
           .cwiseMax(lower_bound_vy)
           .cwiseMin(upper_bound_vy);
+        if (clamp_raw_controls_) {
+          state.cvy.col(i - 1) = state.vy.col(i);
+        }
       }
     }
 
@@ -156,6 +167,31 @@ public:
     }
   }
 
+  /**
+   * @brief With input pose, speed find the vehicle's output pose at pred_dt in future
+   * @param pose pose of the robot
+   * @param speed speed
+   * @param pred_dt time in future to predict the pose
+  */
+  virtual void predictPose(
+    geometry_msgs::msg::Pose & pose,
+    const geometry_msgs::msg::Twist & speed, float pred_dt)
+  {
+    const bool is_holo = isHolonomic();
+    auto initial_yaw = static_cast<float>(tf2::getYaw(pose.orientation));
+    auto yaw_cos = cosf(initial_yaw);
+    auto yaw_sin = sinf(initial_yaw);
+    auto dx = static_cast<float>(speed.linear.x) * yaw_cos;
+    auto dy = static_cast<float>(speed.linear.x) * yaw_sin;
+    if (is_holo) {
+      dx -= speed.linear.y * yaw_sin;
+      dy += speed.linear.y * yaw_cos;
+    }
+    pose.position.x += dx * pred_dt;
+    pose.position.y += dy * pred_dt;
+    initial_yaw += speed.angular.z * pred_dt;
+    pose.orientation = nav2_util::geometry_utils::orientationAroundZAxis(initial_yaw);
+  }
   /**
    * @brief Whether the motion model is holonomic, using Y axis
    * @return Bool If holonomic
@@ -230,6 +266,7 @@ protected:
   float model_delay_vx_{0.0};
   float model_delay_vy_{0.0};
   float model_delay_wz_{0.0};
+  bool clamp_raw_controls_{false};
 
   // Per-axis ring buffer of recently published commands
   std::vector<float> cmd_history_vx_;

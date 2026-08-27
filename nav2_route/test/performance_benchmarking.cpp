@@ -22,6 +22,7 @@
 #include "nav2_route/utils.hpp"
 #include "nav2_route/route_planner.hpp"
 #include "nav2_route/node_spatial_tree.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 
 using namespace nav2_route;  // NOLINT
 
@@ -71,7 +72,7 @@ int main(int argc, char const * argv[])
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<nav2::LifecycleNode>("route_benchmarking2");
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer;
+  nav2::TransformBuffer::SharedPtr tf_buffer;
 
   Graph graph = createGraph();
 

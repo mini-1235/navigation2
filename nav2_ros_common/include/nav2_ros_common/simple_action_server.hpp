@@ -55,6 +55,10 @@ public:
   // in SimpleActionServer and terminate the action itself.
   typedef std::function<void ()> ExecuteCallback;
 
+  // Callback function to validate a goal before acceptance and execution.
+  // Return true to accept the goal and false to reject it.
+  typedef std::function<bool (std::shared_ptr<const typename ActionT::Goal>)> GoalReceivedCallback;
+
   // Callback function to notify the user that an exception was thrown that
   // the simple action server caught (or another failure) and the action was
   // terminated. To avoid using, catch exceptions in your application such that
@@ -77,6 +81,7 @@ public:
     NodeT node,
     const std::string & action_name,
     ExecuteCallback execute_callback,
+    GoalReceivedCallback goal_received_callback = nullptr,
     CompletionCallback completion_callback = nullptr,
     std::chrono::milliseconds server_timeout = std::chrono::milliseconds(500),
     bool spin_thread = false,
@@ -87,7 +92,7 @@ public:
       node->get_node_logging_interface(),
       node->get_node_waitables_interface(),
       node->get_node_parameters_interface(),
-      action_name, execute_callback, completion_callback,
+      action_name, execute_callback, goal_received_callback, completion_callback,
       server_timeout, spin_thread, realtime)
   {}
 
@@ -109,6 +114,7 @@ public:
     rclcpp::node_interfaces::NodeParametersInterface::SharedPtr node_parameters_interface,
     const std::string & action_name,
     ExecuteCallback execute_callback,
+    GoalReceivedCallback goal_received_callback = nullptr,
     CompletionCallback completion_callback = nullptr,
     std::chrono::milliseconds server_timeout = std::chrono::milliseconds(500),
     bool spin_thread = false,
@@ -120,6 +126,7 @@ public:
     node_parameters_interface_(node_parameters_interface),
     action_name_(action_name),
     execute_callback_(execute_callback),
+    goal_received_callback_(goal_received_callback),
     completion_callback_(completion_callback),
     server_timeout_(server_timeout),
     spin_thread_(spin_thread)
@@ -162,7 +169,7 @@ public:
    */
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & /*uuid*/,
-    std::shared_ptr<const typename ActionT::Goal>/*goal*/)
+    std::shared_ptr<const typename ActionT::Goal> goal)
   {
     std::lock_guard<std::recursive_mutex> lock(update_mutex_);
 
@@ -170,6 +177,11 @@ public:
       RCLCPP_INFO(
         node_logging_interface_->get_logger(),
         "Action server is inactive. Rejecting the goal.");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+
+    if (goal_received_callback_ && !goal_received_callback_(goal)) {
+      debug_msg("Goal received callback rejected goal");
       return rclcpp_action::GoalResponse::REJECT;
     }
 
@@ -551,6 +563,7 @@ protected:
   std::string action_name_;
 
   ExecuteCallback execute_callback_;
+  GoalReceivedCallback goal_received_callback_;
   CompletionCallback completion_callback_;
   std::future<void> execution_future_;
   bool stop_execution_{false};

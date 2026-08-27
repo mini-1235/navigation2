@@ -26,6 +26,7 @@
 #include "nav2_core/controller_exceptions.hpp"
 #include "nav2_costmap_2d/costmap_filters/filter_values.hpp"
 #include "nav2_ros_common/node_utils.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 
 namespace mppi
 {
@@ -33,7 +34,7 @@ namespace mppi
 void Optimizer::initialize(
   nav2::LifecycleNode::WeakPtr parent, const std::string & name,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros,
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+  nav2::TransformBuffer::SharedPtr tf_buffer,
   ParametersHandler * param_handler)
 {
   parent_ = parent;
@@ -105,6 +106,7 @@ void Optimizer::getParams()
   getParam(s.model_delay_vx, "model_delay_vx", 0.0f);
   getParam(s.model_delay_vy, "model_delay_vy", 0.0f);
   getParam(s.model_delay_wz, "model_delay_wz", 0.0f);
+  getParam(s.clamp_raw_controls, "clamp_raw_controls", false);
   getParam(s.time_steps, "time_steps", 56);
   getParam(s.batch_size, "batch_size", 1000);
   getParam(s.iteration_count, "iteration_count", 1);
@@ -198,7 +200,8 @@ void Optimizer::reset(bool reset_dynamic_speed_limits)
 
   noise_generator_.reset(settings_, isHolonomic());
   motion_model_->setConstraints(settings_.constraints, settings_.model_dt,
-    settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz);
+    settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz,
+    settings_.clamp_raw_controls);
   motion_model_->clearCommandHistory();
   trajectory_validator_->initialize(
     parent_, name_ + ".TrajectoryValidator",
@@ -301,6 +304,7 @@ void Optimizer::prepare(
   const geometry_msgs::msg::Pose & goal,
   nav2_core::GoalChecker * goal_checker)
 {
+  state_.pose = robot_pose;
   if (settings_.open_loop) {
     state_.speed = last_command_vel_;
   } else {
@@ -309,29 +313,27 @@ void Optimizer::prepare(
     // Clamp to physically achievable range so prediction never exceeds dynamics.
     const auto & c = settings_.constraints;
     const double dt = settings_.controller_period;
+    float max_delta_vx = dt * c.ax_max;
+    float min_delta_vx = dt * c.ax_min;
+    float max_delta_wz = dt * c.az_max;
     state_.speed = robot_speed;
-    state_.speed.linear.x = std::clamp(
-      last_command_vel_.linear.x,
-      robot_speed.linear.x + dt * c.ax_min,
-      robot_speed.linear.x + dt * c.ax_max);
-    state_.speed.angular.z = std::clamp(
-      last_command_vel_.angular.z,
-      robot_speed.angular.z - dt * c.az_max,
-      robot_speed.angular.z + dt * c.az_max);
+    state_.speed.linear.x = utils::clampVelocityByAccel(
+      robot_speed.linear.x, last_command_vel_.linear.x, min_delta_vx, max_delta_vx);
+    state_.speed.angular.z = utils::clampVelocityByAccel(
+      robot_speed.angular.z, last_command_vel_.angular.z, -max_delta_wz, max_delta_wz);
     if (isHolonomic()) {
-      state_.speed.linear.y = std::clamp(
-        last_command_vel_.linear.y,
-        robot_speed.linear.y + dt * c.ay_min,
-        robot_speed.linear.y + dt * c.ay_max);
+      float max_delta_vy = dt * c.ay_max;
+      float min_delta_vy = dt * c.ay_min;
+      state_.speed.linear.y = utils::clampVelocityByAccel(
+      robot_speed.linear.y, last_command_vel_.linear.y, min_delta_vy, max_delta_vy);
     }
+    // Predict the robot pose at dt in future
+    motion_model_->predictPose(state_.pose.pose, robot_speed, dt);
   }
-
-  state_.pose = robot_pose;
   state_.local_path_length = nav2_util::geometry_utils::calculate_path_length(plan);
   path_ = utils::toTensor(plan);
   costs_.setZero(settings_.batch_size);
   goal_ = goal;
-
   critics_data_.fail_flag = false;
   critics_data_.goal_checker = goal_checker;
   critics_data_.motion_model = motion_model_;
@@ -674,7 +676,8 @@ void Optimizer::setMotionModel(const std::string & motion_model_name)
     motion_model_ = motion_model_loader_->createSharedInstance(plugin_type);
     motion_model_->initialize(parameters_handler_, plugin_ns);
     motion_model_->setConstraints(settings_.constraints, settings_.model_dt,
-      settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz);
+      settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz,
+      settings_.clamp_raw_controls);
   } catch (const pluginlib::PluginlibException & ex) {
     throw nav2_core::ControllerException(
             std::string("Failed to load motion model plugin '") + motion_model_name +
@@ -710,7 +713,8 @@ void Optimizer::setSpeedLimit(double speed_limit, bool percentage)
     }
   }
   motion_model_->setConstraints(settings_.constraints, settings_.model_dt,
-    settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz);
+    settings_.model_delay_vx, settings_.model_delay_vy, settings_.model_delay_wz,
+    settings_.clamp_raw_controls);
 }
 
 models::Trajectories & Optimizer::getGeneratedTrajectories()

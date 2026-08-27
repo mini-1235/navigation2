@@ -42,7 +42,7 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/timer.hpp"
 #include "rclcpp/utilities.hpp"
-#include "tf2_ros/transform_listener.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_costmap_2d/cost_values.hpp"
 
@@ -54,7 +54,7 @@ std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
 class CostmapTester : public testing::Test
 {
 public:
-  explicit CostmapTester(tf2_ros::Buffer & tf);
+  explicit CostmapTester(nav2::TransformBuffer & tf);
   void checkConsistentCosts();
   void compareCellToNeighbors(
     nav2_costmap_2d::Costmap2D & costmap,
@@ -65,7 +65,7 @@ public:
   virtual void TestBody() {}
 };
 
-CostmapTester::CostmapTester(tf2_ros::Buffer & tf)
+CostmapTester::CostmapTester(nav2::TransformBuffer & tf)
 {
   costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>("test_costmap", tf);
 }
@@ -150,8 +150,8 @@ void CostmapTester::compareCells(
 }   // namespace nav2_costmap_2d
 
 nav2_costmap_2d::CostmapTester * map_tester = NULL;
-tf2_ros::TransformListener * tfl_;
-tf2_ros::Buffer * tf_;
+nav2::TransformListener * tfl_;
+nav2::TransformBuffer * tf_;
 
 TEST(CostmapTester, checkConsistentCosts) {
   map_tester->checkConsistentCosts();
@@ -169,8 +169,8 @@ int main(int argc, char ** argv)
   auto node = nav2::LifecycleNode::make_shared("costmap_tester");
   testing::InitGoogleTest(&argc, argv);
 
-  tf_ = new tf2_ros::Buffer(node->get_clock());
-  tfl_ = new tf2_ros::TransformListener(*tf_);
+  tf_ = new nav2::TransformBuffer(node->get_clock());
+  tfl_ = new nav2::TransformListener(*tf_);
   map_tester = new nav2_costmap_2d::CostmapTester(*tf_);
   rclcpp::TimerBase::SharedPtr timer = node->create_wall_timer(30000ms, testCallback);
   rclcpp::spin(costmap_ros_);

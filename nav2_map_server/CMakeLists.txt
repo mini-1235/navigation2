@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20)
 project(nav2_map_server)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake_modules)
@@ -58,7 +58,7 @@ target_include_directories(${map_io_library_name}
 target_link_libraries(${map_io_library_name} PUBLIC
   nav2_util::nav2_util_core
   nav2_ros_common::nav2_ros_common
-  ${nav_msgs_TARGETS}
+  nav_msgs::nav_msgs
 )
 target_link_libraries(${map_io_library_name} PRIVATE
   ${GRAPHICSMAGICKCPP_LIBRARIES}
@@ -77,15 +77,15 @@ target_include_directories(${library_name}
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(${library_name} PUBLIC
   ${map_io_library_name}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   nav2_ros_common::nav2_ros_common
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
 )
 target_link_libraries(${library_name} PRIVATE
-  ${lifecycle_msgs_TARGETS}
+  lifecycle_msgs::lifecycle_msgs
   rclcpp_components::component
   yaml-cpp::yaml-cpp
 )
@@ -99,9 +99,9 @@ target_include_directories(${vo_library_name}
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
   "$<BUILD_INTERFACE:${nav2_ros_common_INCLUDE_DIRS}>")
 target_link_libraries(${vo_library_name} PUBLIC
-  ${geometry_msgs_TARGETS}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  geometry_msgs::geometry_msgs
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
@@ -110,7 +110,7 @@ target_link_libraries(${vo_library_name} PUBLIC
   ${UUID_LIBRARIES}
 )
 target_link_libraries(${library_name} PRIVATE
-  ${lifecycle_msgs_TARGETS}
+  lifecycle_msgs::lifecycle_msgs
   rclcpp_components::component
   yaml-cpp::yaml-cpp
 )
@@ -137,8 +137,8 @@ target_include_directories(${map_saver_cli_executable}
 target_link_libraries(${map_saver_cli_executable} PRIVATE
   ${library_name}
   ${map_io_library_name}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   nav2_ros_common::nav2_ros_common
   rclcpp::rclcpp
@@ -154,8 +154,8 @@ target_include_directories(${map_saver_server_executable}
 target_link_libraries(${map_saver_server_executable} PRIVATE
   ${library_name}
   ${map_io_library_name}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   nav2_ros_common::nav2_ros_common
   rclcpp::rclcpp
@@ -171,8 +171,8 @@ target_include_directories(${costmap_filter_info_server_executable}
 target_link_libraries(${costmap_filter_info_server_executable} PRIVATE
   ${library_name}
   ${map_io_library_name}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   nav2_ros_common::nav2_ros_common
   rclcpp::rclcpp
@@ -187,8 +187,8 @@ target_include_directories(${vo_server_executable}
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(${vo_server_executable} PRIVATE
   ${vo_library_name}
-  ${nav_msgs_TARGETS}
-  ${nav2_msgs_TARGETS}
+  nav_msgs::nav_msgs
+  nav2_msgs::nav2_msgs
   nav2_util::nav2_util_core
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle

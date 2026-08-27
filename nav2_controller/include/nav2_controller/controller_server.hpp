@@ -27,7 +27,7 @@
 #include "nav2_core/goal_checker.hpp"
 #include "nav2_core/path_handler.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "tf2_ros/transform_listener.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 #include "nav2_msgs/action/follow_path.hpp"
 #include "nav2_msgs/msg/tracking_feedback.hpp"
 #include "nav2_msgs/msg/speed_limit.hpp"
@@ -116,6 +116,13 @@ protected:
   using Action = nav2_msgs::action::FollowPath;
   using ActionServer = nav2::SimpleActionServer<Action>;
 
+  /**
+   * @brief Goal received callback to validate a new goal before acceptance
+   * @param goal The incoming goal to validate
+   * @return true if goal should be accepted, false to reject
+   */
+  bool goalReceived(std::shared_ptr<const Action::Goal> goal);
+
   // Our action server implements the FollowPath action
   typename ActionServer::SharedPtr action_server_;
 
@@ -171,6 +178,13 @@ protected:
    * @param path Path received from action server
    */
   void setPlannerPath(const nav_msgs::msg::Path & path);
+
+  /**
+   * @brief Refreshes transformed_global_plan_ and transformed_end_pose_ for the current cycle
+   *
+   * @throw nav2_core::ControllerTFError if the robot pose or end pose cannot be obtained
+   */
+  void transformedPlanAndGoal();
   /**
    * @brief Calculates velocity and publishes to "cmd_vel" topic
    */

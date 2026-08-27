@@ -20,14 +20,6 @@
 #include "rclcpp/node_options.hpp"
 #include "rclcpp/utilities.hpp"
 
-class RclCppFixture
-{
-public:
-  RclCppFixture() {rclcpp::init(0, nullptr);}
-  ~RclCppFixture() {rclcpp::shutdown();}
-};
-RclCppFixture g_rclcppfixture;
-
 class LifecycleTransitionTestNode : public nav2::LifecycleNode
 {
 public:
@@ -129,4 +121,13 @@ protected:
   node.reset();
 
   SUCCEED();
+}
+
+int main(int argc, char ** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

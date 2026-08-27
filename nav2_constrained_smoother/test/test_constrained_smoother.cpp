@@ -27,7 +27,7 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/parameter.hpp"
 #include "rclcpp/utilities.hpp"
-#include "tf2_ros/create_timer_ros.hpp"
+#include "nav2_ros_common/tf2_factories.hpp"
 #include "nav2_util/geometry_utils.hpp"
 #include "nav2_costmap_2d/inflation_layer.hpp"
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
@@ -116,11 +116,7 @@ protected:
     node_lifecycle_ =
       std::make_shared<nav2::LifecycleNode>("ConstrainedSmootherTestNode");
 
-    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_lifecycle_->get_clock());
-    auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>(
-      node_lifecycle_->get_node_base_interface(),
-      node_lifecycle_->get_node_timers_interface());
-    tf_buffer_->setCreateTimerInterface(timer_interface);
+    tf_buffer_ = nav2::create_transform_buffer(node_lifecycle_);
 
     costmap_sub_ =
       std::make_shared<DummyCostmapSubscriber>(
@@ -395,7 +391,7 @@ protected:
 
   nav2::LifecycleNode::SharedPtr node_lifecycle_;
   std::shared_ptr<nav2_constrained_smoother::ConstrainedSmoother> smoother_;
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  nav2::TransformBuffer::SharedPtr tf_buffer_;
   std::shared_ptr<DummyCostmapSubscriber> costmap_sub_;
   std::shared_ptr<nav2_costmap_2d::FootprintSubscriber> footprint_sub_;
 
